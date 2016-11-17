@@ -1,0 +1,445 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+        <style>
+            .modal {
+                display: none; /* Hidden by default */
+                position: fixed; /* Stay in place */
+                z-index: 1; /* Sit on top */
+                left: 0;
+                top: 0;
+                width: 100%; /* Full width */
+                height: 100%; /* Full height */
+                overflow: auto; /* Enable scroll if needed */
+                background-color: rgb(0,0,0); /* Fallback color */
+                background-color: rgba(0,0,0,0.4)
+            }
+        
+            /* Modal Content */
+            .modal-content {
+                margin: 15% auto; /* 15% from the top and centered */
+                padding: 10px;
+                border: 1px solid #888;
+                width: 80%; /* Could be more or less, depending on screen size */
+                background-color: #fefefe;
+            }
+            
+            /* The Close Button */
+            .close {
+                color: white;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            
+            .close:hover,
+            .close:focus {
+                color: #000;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            
+            .modal-header {
+                padding: 2px 16px;
+                background-color: #5cb85c;
+                color: white;
+            }
+            
+			.modal-body {
+				padding: 2px 16px;
+				background-color: #eeeeee;
+			}
+		
+            .modal-footer {
+                padding: 2px 16px;
+                background-color: #5cb85c;
+                color: white;
+            }
+			</style>
+    </head>
+	<script language="JavaScript" type="text/javascript">
+		var newListing = "";
+		var deleteImage = "data:image/gif;base64,R0lGODlhEAAQAPQAAMwiAM4lA9IpB9UuDNo0Et46GONBH+hHJe1OLPFUMv9VM/ZaOP9aOPlfPf9gPv1jQf9mRP9oRv9xT/97Wf+EYv+ObP+Tcf+Xdf+fff+lg/+qiAAAAAAAAAAAAAAAAAAAACH5BAEAABsALAAAAAAQABAAAAVx4CaOZDlCkCmi4/Noj/m6YqNlWkPauC4uGIxm8dMEiaTE5aJJJDTLhApRqWg0VYRKdKB4KYetyGCZTCwGcUEjaUs0BRVBE4kQCHUNoTTQOBwDIgN/GoEiAhoMDAIkAooajBsBAQoBJpSTIwAAW5tiYiEAOw==";
+		var folderImage = "data:image/gif;base64,R0lGODlhFAAWAMIAAP/////Mmcz//5lmMzMzMwAAAAAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAACACwAAAAAFAAWAAADVCi63P4wyklZufjOErrvRcR9ZKYpxUB6aokGQyzHKxyO9RoTV54PPJyPBewNSUXhcWc8soJOIjTaSVJhVphWxd3CeILUbDwmgMPmtHrNIyxM8Iw7AQA7";
+		var parentImage = "data:image/gif;base64,R0lGODlhFAAWAMIAAP///8z//5mZmWZmZjMzMwAAAAAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAADSxi63P4jEPJqEDNTu6LO3PVpnDdOFnaCkHQGBTcqRRxuWG0v+5LrNUZQ8QPqeMakkaZsFihOpyDajMCoOoJAGNVWkt7QVfzokc+LBAA7";
+		var unknownImage = "data:image/gif;base64,R0lGODlhFAAWAKIBAP///////5mZmTMzMwAAAAAAAAAAAAAAACH5BAEAAAEALAAAAAAUABYAAANQOLq88TAMQKudI75pO88R11UiuI3XBYkoMbjwiVJEbRPyTAm8gEs6S+/HCgJ8OeORqKwggc1l0vgsBqtRKbSJjXa5TC9x0Cubea/Ibc3+JQAAOw=="
+        var textImage = "data:image/gif;base64,R0lGODlhFAAWAMIAAP///8z//5mZmTMzMwAAAAAAAAAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAADWDi6vPEwDECrnSO+aTvPEddVIriN1wVxROtSxBDPJwq7bo23luALhJqt8gtKbrsXBSgcEo2spBLAPDp7UKT02bxWRdrp94rtbpdZMrrr/A5+8LhPFpHajQkAOw==";
+        var pdfImage = "data:image/gif;base64,R0lGODlhFAAWALMJAPr19PLa1vWyrO5RSPKHg/////v7+5mZmTMzM////wAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAkALAAAAAAUABYAAASJEMlJZ7o4ocK730h2bV5JhhlZdio6rt+HqXAlvXAR2ChdCAOBoQAIHI6HXokQGHAMBgBS6REAPVEptdMklKJJXAcwCKwMYU0J6C1pxRyCVVhK05rWwYDAJ9o5AEBBAAYCcgOEdlF7iFBQgWZvaohBjlB1SgRBBY4rkhtDOR52CEimp0c3MzysFxEAOw=="
+        var lockImage = "data:image/gif;base64,R0lGODlhEAAQALMOAP///+69AOnGP9akAMyZANSqMK2DI7OSXdzc3Nvb28bGxrGxsa+vr5mZmf///wAAACH5BAEAAA4ALAAAAAAQABAAAARi0EkJlloMzC2RQkniIRy1JMyyNImicaCSdCzJyczWKEr5NTqeD7Wx9DgHQcHANBQEh1IyMCAQAgGoVEAlDAbZKJJbvQq04+43Wyg91Vn0ZlpdyyfJJfN5dwAACIEhMgh/GhEAOw=="
+		var unlockImage = 	"data:image/gif;base64,R0lGODlhEAAQADAOACH5BAEAAA4ALAAAAAAQABAAhwAAAAAAMwAAZgAAmQAAzAAA/wArAAArMwArZgArmQArzAAr/wBVAABVMwBVZgBVmQBVzABV/wCAAACAMwCAZgCAmQCAzACA/wCqAACqMwCqZgCqmQCqzACq/wDVAADVMwDVZgDVmQDVzADV/wD/AAD/MwD/ZgD/mQD/zAD//zMAADMAMzMAZjMAmTMAzDMA/zMrADMrMzMrZjMrmTMrzDMr/zNVADNVMzNVZjNVmTNVzDNV/zOAADOAMzOAZjOAmTOAzDOA/zOqADOqMzOqZjOqmTOqzDOq/zPVADPVMzPVZjPVmTPVzDPV/zP/ADP/MzP/ZjP/mTP/zDP//2YAAGYAM2YAZmYAmWYAzGYA/2YrAGYrM2YrZmYrmWYrzGYr/2ZVAGZVM2ZVZmZVmWZVzGZV/2aAAGaAM2aAZmaAmWaAzGaA/2aqAGaqM2aqZmaqmWaqzGaq/2bVAGbVM2bVZmbVmWbVzGbV/2b/AGb/M2b/Zmb/mWb/zGb//5kAAJkAM5kAZpkAmZkAzJkA/5krAJkrM5krZpkrmZkrzJkr/5lVAJlVM5lVZplVmZlVzJlV/5mAAJmAM5mAZpmAmZmAzJmA/5mqAJmqM5mqZpmqmZmqzJmq/5nVAJnVM5nVZpnVmZnVzJnV/5n/AJn/M5n/Zpn/mZn/zJn//8wAAMwAM8wAZswAmcwAzMwA/8wrAMwrM8wrZswrmcwrzMwr/8xVAMxVM8xVZsxVmcxVzMxV/8yAAMyAM8yAZsyAmcyAzMyA/8yqAMyqM8yqZsyqmcyqzMyq/8zVAMzVM8zVZszVmczVzMzV/8z/AMz/M8z/Zsz/mcz/zMz///8AAP8AM/8AZv8Amf8AzP8A//8rAP8rM/8rZv8rmf8rzP8r//9VAP9VM/9VZv9Vmf9VzP9V//+AAP+AM/+AZv+Amf+AzP+A//+qAP+qM/+qZv+qmf+qzP+q///VAP/VM//VZv/Vmf/VzP/V////AP//M///Zv//mf//zP///wAAAAAAAAAAAAAAAAiEAPcJHJhJGbFMAxMOVKasHsN9xKApHEhMWaaDBYlNHIhGmUCLDTdOnPRQZMKLHk0SNDhRUrxgkHZF0hUsnqSJvI6pA8ZTnbF1lyZiWgcPmK6eyHjh1GmUZ7x1mIQS5Qls58uJwZgeVXfMJs54VHt6VegymMxdNYMJ26hsmTJ6BpdJHBgQADs="
+        var jsonImage = "data:image/gif;base64,R0lGODlhFAAWAKIGAP////7+/v39/ZmZmTMzMwAAAP///wAAACH5BAEAAAYALAAAAAAUABYAAANeSLq89tAQQKudJL5pO88R11UiuI3XBYloQbjwiVJFbRfyTA38gEs6S+/HCgJ8OeOR6CF1kEBnqgJlFVlV0lWUlXqXyauQOQUQBILAjowKuKlsZZXQq9t5r8htz/8lAAA7"
+		var magnifyImage = "data:image/gif;base64,R0lGODlhEAAQALMPAMnO0fT6/ufz+9Ls/SMjI5SVlre7vWBgYKqqqtvx/9vf4quxtp2foYyMjP///////yH5BAEAAA8ALAAAAAAQABAAAARz8D21mi3GyS1BYYCiAA2jcUKzOGzgCAxySogZ3IIQDIXCNQAHLpdILAA/xVBQHBgYyUCOmRg4DRzMtGkFcTwDqnVACnAeDIaiaiWVZrTSYlFoHAgH2VlhQCAMAASCeXBnDwaCeHqGG4GDUIwbiIORHAqDEQA7"
+		
+		onload = function()
+		{
+			var filesUpload = document.getElementById("files-upload");
+							
+			// Set the index to the current URI
+			document.getElementById('cdmi_location').value = document.URL.substring(0, document.URL.lastIndexOf("/")) + "/CDMI/";
+			set_documenttitle();
+			
+			// Perform a CDMI container request to populate the "cdmi_listing" div in the HTML
+			list_container();
+		
+			filesUpload.addEventListener("change", function () {
+				traverseFiles(this.files);
+			}, false);
+		}
+
+		// Utility function to check if the string ends with another string
+		if (typeof String.prototype.endsWith !== 'function') {
+			String.prototype.endsWith = function(suffix) {
+				return this.indexOf(suffix, this.length - suffix.length) !== -1;
+			};
+		}
+
+		
+		// Lists the contents of a CDMI Container
+		function list_container()
+		{
+			var url = "";
+			
+			set_documenttitle();
+			url = document.getElementById('cdmi_location').value;
+			
+			// Perform an AJAX request to perform a CDMI container or capabilities GET
+			request = new XMLHttpRequest();
+			request.open("GET", url, true);
+			request.setRequestHeader("Accept", "application/cdmi-container");
+			request.setRequestHeader("X-CDMI-Specification-Version", "1.0.1");
+			request.onreadystatechange = request.onreadystatechange = function()
+			{
+				process_results(request)
+			}
+			request.send("");
+		}
+		
+		function extract_uri(url)
+		{
+			var basepath = url.split("//");
+			path = basepath[1].substring(basepath[1].indexOf("/"), basepath[1].length);
+			return path
+		}
+		
+		function set_documenttitle()
+		{
+			document.title = "Index of " + extract_uri(document.getElementById('cdmi_location').value);
+		}
+
+		// Process the results of the CDMI GET
+		function process_results(theresult)
+		{
+			if(theresult.readyState == 3)
+			{
+				cdmi_container = JSON.parse(theresult.responseText);
+
+				newListing = '<table width="660"><tr><th width="20"></th><th width="250" align="left">Name</th><th width="200" align="left">Last Modified</th><th width="80" align="left">Size</th><th width="18" align="left"></th><th width="18" align="left"></th><th width="18" align="left"></th></tr>';
+				print_parent(cdmi_container);
+				cdmi_container.children.forEach(inspect_child);
+				newListing = newListing + '</th></tr></table>';
+				
+				document.getElementById('cdmi_listing').innerHTML = newListing;
+			}
+		}
+
+		// Render a "Parent Directory" entry if not at "/"
+		function print_parent(cdmi_container)
+		{
+			var base_path = document.getElementById('cdmi_location').value;
+			var child_entry = "";
+			
+			if(cdmi_container.parentURI && cdmi_container.parentURI != "")
+			{
+				var parent_path = base_path.substring(0, base_path.lastIndexOf("/"));
+				parent_path = parent_path.substring(0, parent_path.lastIndexOf("/")) + "/";
+				
+				child_entry = '<tr><td valign="bottom" width="20"><img src="' + parentImage + '"> </td><td valign="bottom"><a href="#" onclick=\'update_location(\"' + parent_path + '\"); return false\'>Parent Directory</a></td></tr>'
+				   
+				newListing = newListing + child_entry;
+			}
+		}
+		
+		// Get information about a child
+		function inspect_child(child, index)
+		{
+			var url = "";
+			var request;
+			
+			set_documenttitle();
+			url = document.getElementById('cdmi_location').value;
+			
+			// Perform an AJAX request to perform a CDMI container or capabilities GET
+			request = new XMLHttpRequest();
+			request.open("GET", url + child + "?objectName;mimetype;metadata", true);
+			request.setRequestHeader("Accept", "application/cdmi-object");
+			request.setRequestHeader("X-CDMI-Specification-Version", "1.0.1");
+			request.onreadystatechange = request.onreadystatechange = function()
+			{
+				print_child(request)
+			}
+			request.send("");
+		}
+		
+		// Render a CDMI child (container or data object)
+		function print_child(theresult)
+		{
+			var base_path = document.getElementById('cdmi_location').value;
+			var child_entry = "";
+	  
+			newListing = document.getElementById('cdmi_listing').innerHTML;
+	  
+			if(theresult.readyState == 3)
+			{
+				newListing = newListing + '<table width="660">';
+
+				cdmi_object = JSON.parse(theresult.responseText);
+
+				// Container listing
+				if(cdmi_object.objectName[cdmi_object.objectName.length - 1] == '/')
+				{
+					child_entry = '<tr><td valign="bottom" width="20"><img src="' + folderImage + '"></td><td width="250" valign="bottom"><a href="#" onclick=\'update_location(\"' + base_path + cdmi_object.objectName + '\"); return false\'>' + cdmi_object.objectName + '</a></td><td width="200" valign="bottom">' + cdmi_object.metadata.cdmi_mtime + '</td><td width="80" valign="bottom">-</td><td width="18"></td><td width="18"><a href="#" onclick=\'inspect_object(\"' + cdmi_object.objectName + '\"); return false\'><img src="' + magnifyImage + '"></a></td><td width="18"><a href="#" onclick=\'delete_object(\"' + cdmi_object.objectName + '\"); return false\'><img src="' + deleteImage + '"></a></td></tr>'
+					   
+					newListing = newListing + child_entry;
+				}
+				else
+				{
+                    var fileMimetype = cdmi_object.mimetype;
+                    var fileIcon = unknownImage;
+                    var isEncrypted = '<a href="#" onclick=\'encrypt_object(\"' + cdmi_object.objectName + '\"); return false\'><img src="' + unlockImage + '"></a>';
+                    
+                    if(fileMimetype.indexOf("text") == 0) { fileIcon = textImage; }
+                    if(fileMimetype.indexOf("application/pdf") == 0) { fileIcon = pdfImage; }
+                    if(fileMimetype.indexOf("application/json") == 0) { fileIcon = jsonImage; }
+                    if(fileMimetype.indexOf("+json") != -1) { fileIcon = jsonImage; }
+                    if(fileMimetype.indexOf("application/cms") == 0 || fileMimetype.indexOf("application/jose") == 0) {isEncrypted = '<a href="#" onclick=\'decrypt_object(\"' + cdmi_object.objectName + '\", \"' + 'text/plain' + '\"); return false\'><img src="' + lockImage + '"></a>'; }
+                    
+                    child_entry = '<tr><td valign="bottom" width="20"><img src="' + fileIcon + '"></td><td width="250" valign="bottom"><a href="' + base_path + cdmi_object.objectName + '">' + cdmi_object.objectName + '</a></td><td width="200" valign="bottom">' + cdmi_object.metadata.cdmi_mtime + '</td><td width="80" valign="bottom">' + cdmi_object.metadata.cdmi_size + '</td><td width="18">' + isEncrypted + '</td><td width="18"><a href="#" onclick=\'inspect_object(\"' + cdmi_object.objectName + '\"); return false\'><img src="' + magnifyImage + '"></a></td><td width="18"><a href="#" onclick=\'delete_object(\"' + cdmi_object.objectName + '\"); return false\'><img src="' + deleteImage + '"></a></td></tr>'
+					   
+					newListing = newListing + child_entry;
+				}
+				
+				newListing = newListing + '</th></tr></table>';
+				document.getElementById('cdmi_listing').innerHTML = newListing;
+			}
+		}
+
+		function update_location(newURL)
+		{
+			document.getElementById('cdmi_location').value = newURL;
+			list_container();
+		}
+
+		function create_container()
+		{
+			var containerName = document.getElementById('container_create').value;
+			var xhr;
+						
+			xhr = new XMLHttpRequest();
+			xhr.addEventListener("load", function () {
+				document.getElementById("upload-progress").innerHTML = "Created.";
+				update_location(document.getElementById('cdmi_location').value);
+			}, false);
+
+			xhr.open("PUT", document.getElementById('cdmi_location').value + containerName + "/", true);
+			xhr.setRequestHeader("Content-Type", "application/cdmi-container");
+			xhr.setRequestHeader("X-CDMI-Specification-Version", "1.0.2");
+			xhr.send("{}");
+		}
+
+		function delete_object(theObjectName)
+		{
+			var xhr;
+						
+			xhr = new XMLHttpRequest();
+			xhr.addEventListener("load", function () {
+				update_location(document.getElementById('cdmi_location').value);
+			}, false);
+
+			xhr.open("DELETE", document.getElementById('cdmi_location').value + theObjectName, true);
+			xhr.setRequestHeader("X-CDMI-Specification-Version", "1.0.2");
+			xhr.send("");
+		}
+		
+		function decrypt_object(theObjectName, plainmime)
+		{
+			var xhr;
+			
+			xhr = new XMLHttpRequest();
+			xhr.addEventListener("load", function () {
+				if(xhr.status == 401) alert("Unauthorized operation");
+				update_location(document.getElementById('cdmi_location').value);
+			}, false);
+			xhr.open("PUT", document.getElementById('cdmi_location').value + theObjectName, true);
+			xhr.setRequestHeader("Content-Type", "application/cdmi-object");
+			xhr.setRequestHeader("X-CDMI-Specification-Version", "1.0.2");
+			xhr.send("{\"mimetype\": \""+ plainmime + "\"}");		
+		}
+
+		function encrypt_object(theObjectName)
+		{
+			var keyid = window.prompt("Enter KeyID to use for encryption:\n(Leave empty for ObjectID)","");
+			
+			var xhr;
+			
+			xhr = new XMLHttpRequest();
+			xhr.addEventListener("load", function () {
+				if(xhr.status == 401) alert("Unauthorized operation");
+				update_location(document.getElementById('cdmi_location').value);
+			}, false);
+
+			xhr.open("PUT", document.getElementById('cdmi_location').value + theObjectName, true);
+			xhr.setRequestHeader("Content-Type", "application/cdmi-object");
+			xhr.setRequestHeader("X-CDMI-Specification-Version", "1.0.2");
+			var msg = '{ "mimetype": "application/jose+json"';
+			if (keyid != "" && keyid != null)
+				msg += ', 	"metadata": {"cdmi_enc_keyID": "' + keyid + '"}'
+			msg += ' }';
+			xhr.send(msg);		
+		}
+		
+		
+        function inspect_object(theObjectName)
+        {
+            var url = "";
+            var request;
+            
+            set_documenttitle();
+            url = document.getElementById('cdmi_location').value;
+            
+            // Perform an AJAX request to perform a CDMI container or capabilities GET
+            request = new XMLHttpRequest();
+            request.open("GET", url + theObjectName, true);
+            request.setRequestHeader("Accept", "application/cdmi-object");
+            request.setRequestHeader("X-CDMI-Specification-Version", "1.0.1");
+            request.onreadystatechange = request.onreadystatechange = function()
+            {
+                display_child(request)
+            }
+            request.send("");
+        }
+    
+        function uploadFile(file)
+		{
+			var xhr;
+						
+			xhr = new XMLHttpRequest();
+			xhr.addEventListener("load", function () {
+				document.getElementById("upload-progress").innerHTML = "Uploaded.";
+				update_location(document.getElementById('cdmi_location').value);
+			}, false);
+
+			xhr.open("PUT", document.getElementById('cdmi_location').value + file.name, true);
+			
+			if(file.name.endsWith(".html"))
+			{
+				xhr.setRequestHeader("Content-Type", "text/html");
+			}
+			else if(file.name.endsWith(".jpg"))
+			{
+				xhr.setRequestHeader("Content-Type", "image/jpeg");
+			}
+            else if(file.name.endsWith(".gif"))
+            {
+                xhr.setRequestHeader("Content-Type", "image/gif");
+            }
+            else if(file.name.endsWith(".png"))
+            {
+                xhr.setRequestHeader("Content-Type", "image/png");
+            }
+			else if(file.name.endsWith(".txt"))
+			{
+				xhr.setRequestHeader("Content-Type", "text/plain;charset=utf-8");
+			}
+            else if(file.name.endsWith(".json"))
+            {
+                xhr.setRequestHeader("Content-Type", "application/json");
+            }
+            else if(file.name.endsWith(".jwe"))
+            {
+                xhr.setRequestHeader("Content-Type", "application/jose+json");
+            }
+            else if(file.name.endsWith(".pdf"))
+            {
+                xhr.setRequestHeader("Content-Type", "application/pdf");
+            }
+			else
+			{
+				xhr.setRequestHeader("Content-Type", "application/octet-stream");
+			}
+
+			xhr.send(file);
+			document.getElementById("upload-progress").innerHTML = "Uploading...";
+		}
+		
+		function traverseFiles(files)
+		{
+			if (typeof files !== "undefined") {
+				for (var i=0, l=files.length; i<l; i++) {
+					uploadFile(files[i]);
+				}
+			}
+		}
+	</script>
+
+	<body>
+	<table width="660">
+		<tr><td colspan="2" bgcolor="black"></td></tr>
+		<tr><td colspan="2">
+			<div style="font-size: 20px;">Index of: <input style="font-size: 20px;" id='cdmi_location' size=47 value=""><button style="font-size: 21px;" onclick='list_container()'>Go</button></div>
+			
+		</tr></td>
+		<tr><td colspan="2" bgcolor="black"></tr></td>
+		<tr><td colspan="2"><div id='cdmi_listing'></div></tr></td>
+		<tr><td colspan="2" bgcolor="black"></td></tr>
+		<tr><td>
+			<div style="font-size: 20px">Upload file(s):<input style="font-size: 20px;" id="files-upload" type="file" multiple></div>
+		</td><td>
+			<div style="font-size: 20px" id='upload-progress'>Ready</div>
+		</td></tr>
+		<tr><td colspan="2" bgcolor="black"></td></tr><tr><td colspan="2">
+		<div style="font-size: 20px;">New Container: <input style="font-size: 20px;" id='container_create' size=39 value=""><button style="font-size: 21px;" onclick='create_container()'>Create</button></div>
+		</td></tr>
+		<tr><td colspan="2" bgcolor="black"></td></tr>
+		<tr><td colspan="2" align="right"><div style="font-size: 8px">CDMI Lister v1.4 2016-08-16</div></td></tr>
+	</table>
+    <div id="myModal" class="modal">
+        
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times</span>
+                    <h3>Raw CDMI Object Contents</h3>
+            </div>
+            <div class="modal-body">
+                <pre id='cdmi_display'></pre>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    <script>
+        var modal = document.getElementById('myModal');
+        var span = document.getElementsByClassName("close")[0];
+        
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+    
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Render a CDMI child (container or data object)
+        function display_child(theresult)
+        {
+            if(theresult.readyState == 3)
+            {
+                document.getElementById('cdmi_display').innerHTML = JSON.stringify(JSON.parse(theresult.responseText), undefined, 4);
+                modal.style.display = "block";
+            }
+        }
+    
+    </script>
+</body>
+</html>
