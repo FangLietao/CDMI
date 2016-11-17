@@ -65,496 +65,570 @@ import org.snia.fakekms.KMS;
  */
 public class DataObject {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataObject.class);
-
-    // DataObject creation fields
-    private String mimetype;
-    private Map<String, String> metadata = new HashMap<String, String>();
-    private String deserialize;
-    private String serialize;
-    private String copy;
-    private String move;
-    private String reference;
-    private String value;
-    private byte[] binaryValue;
-    // DataObject representation fields
-    private String objectType;
-    private String objectID;
-    private String objectName;
-    private String parentURI;
-    private String accountURI;
-    private String capabilitiesURI;
-    private String completionStatus;
-    private Integer percentComplete; // FIXME - Specification says String but that does not make
-    // sense
-    private String valuerange;
-    private String valueTransferEncoding;
-
-    // Representation also includes "mimetype", "metadata", and "value" from creation fields
-    //
-    public String getMimetype() {
-        return mimetype;
-    }
-
-    public void setMimetype(String mimetype) {
-        this.mimetype = mimetype;
-    }
-
-    public Map<String, String> getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String key, String val) {
-        metadata.put(key, val);
-    }
-
-    public String getDeserialize() {
-        return deserialize;
-    }
-
-    public void setDeserialize(String deserialize) {
-        this.deserialize = deserialize;
-    }
-
-    public String getSerialize() {
-        return serialize;
-    }
-
-    public void setSerialize(String serialize) {
-        this.serialize = serialize;
-    }
-
-    public String getCopy() {
-        return copy;
-    }
-
-    public void setCopy(String copy) {
-        this.copy = copy;
-    }
-
-    public String getMove() {
-        return move;
-    }
-
-    public void setMove(String move) {
-        this.move = move;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-
-    public void setReference(String reference) {
-        this.reference = reference;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public String getObjectType() {
-        return objectType;
-    }
-
-    public void setObjectType(String objectURI) {
-        this.objectType = objectURI;
-    }
-
-    public String getObjectID() {
-        return objectID;
-    }
-
-    public void setObjectID(String objectID) {
-        this.objectID = objectID;
-    }
-
-    public String getObjectName() {
-        return objectName;
-    }
-
-    public void setObjectName(String objectName) {
-        this.objectName = objectName;
-    }
-
-    public String getParentURI() {
-        return parentURI;
-    }
-
-    public void setParentURI(String parentURI) {
-        this.parentURI = parentURI;
-    }
-
-    public String getAccountURI() {
-        return accountURI;
-    }
-
-    public void setAccountURI(String accountURI) {
-        this.accountURI = accountURI;
-    }
-
-    public String getCapabilitiesURI() {
-        return capabilitiesURI;
-    }
-
-    public void setCapabilitiesURI(String capabilitiesURI) {
-        this.capabilitiesURI = capabilitiesURI;
-    }
-
-    public String getCompletionStatus() {
-        return completionStatus;
-    }
-
-    public void setCompletionStatus(String completionStatus) {
-        this.completionStatus = completionStatus;
-    }
-
-    public Integer getPercentComplete() {
-        return percentComplete;
-    }
-
-    public void setPercentComplete(Integer percentComplete) {
-        this.percentComplete = percentComplete;
-    }
-
-    public void setValueTransferEncoding(String valueTransferEncoding) {
-        this.valueTransferEncoding = valueTransferEncoding;
-    }
-
-    public String getValueTransferEncoding() {
-        return this.valueTransferEncoding;
-    }
-
-    public String getValuerange() {
-        return valuerange;
-    }
-
-    public void setValuerange(String valuerange) {
-        this.valuerange = valuerange;
-    }
-
-    public String toJson() throws Exception {
-        //
-        try {
-            JSONObject j = new JSONObject();
-
-            //
-            if (objectType != null) {
-                j.put("objectType", objectType);
-            }
-            if (objectName != null) {
-                j.put("objectName", objectName);
-            }
-            if (capabilitiesURI != null) {
-                j.put("capabilitiesURI", capabilitiesURI);
-            }
-            if (objectID != null) {
-                j.put("objectID", objectID);
-            }
-            if (mimetype != null) {
-                j.put("mimetype", mimetype);
-            }
-            //
-            JSONObject m = new JSONObject();
-            for (Map.Entry<String, String> entry : metadata.entrySet()) {
-                m.put(entry.getKey(), entry.getValue());
-            }
-            j.put("metadata", m);
-            //
-
-            if (valueTransferEncoding != null) {
-                j.put("valueTransferEncoding", valueTransferEncoding);
-            }
-            if (value != null) {
-                j.put("valueRange", value.length() + "");
-            }
-            if (value != null) {
-                j.put("value", value);
-            }
-
-            return j.toJSONString(JSONStyle.NO_COMPRESS);
-            //
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-            // return ("Error : " + ex);
-        }
-        //
-
-    }
-
-    public String metadataToJson() throws Exception {
-        //
-        try {
-            JSONObject j = new JSONObject();
-            if (objectType != null) {
-                j.put("objectType", objectType);
-            }
-            if (capabilitiesURI != null) {
-                j.put("capabilitiesURI", capabilitiesURI);
-            }
-            if (objectID != null) {
-                j.put("objectID", objectID);
-            }
-            if (objectName != null) {
-                j.put("objectName", objectName);
-            }
-            if (mimetype != null) {
-                j.put("mimetype", mimetype);
-            }
-            if (valueTransferEncoding != null) {
-                j.put("valuetransferencoding", valueTransferEncoding);
-            }
-
-            //
-            JSONObject m = new JSONObject();
-            for (Map.Entry<String, String> entry : metadata.entrySet()) {
-                m.put(entry.getKey(), entry.getValue());
-            }
-            j.put("metadata", m);          
-            
-            return j.toJSONString(JSONStyle.NO_COMPRESS);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-            // return ("Error : " + ex);
-        }
-        //
-    }
-
-    public void fromJson(InputStream jsonIs, boolean fromFile) throws ParseException {
-        JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
-        JSONObject json = (JSONObject) jp.parse(jsonIs);
-        fromJson(json, fromFile);
-    }
-
-    public void fromJson(byte[] jsonBytes, boolean fromFile) throws ParseException {
-        JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
-        JSONObject json = (JSONObject) jp.parse(jsonBytes);
-        fromJson(json, fromFile);
-    }
-
-    private void fromJson(JSONObject json, boolean fromFile) {
-
-        if (json.containsKey("metadata")) {
-            JSONObject m = (JSONObject) json.get("metadata");
-
-            for (Map.Entry<String, Object> entry : m.entrySet()) {
-                this.getMetadata().put(entry.getKey(), (String) entry.getValue());
-            }
-
-        }
-        if (json.containsKey("valuetransferencoding")) {
-            String vte = json.getAsString("valuetransferencoding");
-            this.setValueTransferEncoding(vte);
-        } else {
-            this.setValueTransferEncoding("utf-8");
-        }
-
-        if (json.containsKey("value")) {
-
-            // handling JSON input
-            // parser automatically processes JSON subobject as utf-8
-            if ("json".equals(getValueTransferEncoding())) {
-                setValueTransferEncoding("utf-8");
-            }
-
-            String v = json.getAsString("value");
-            this.setValue(v);
-        }
-
-        if (json.containsKey("objectName")) {
-            this.setObjectName(json.getAsString("objectName"));
-        }
-
-        if (json.containsKey("mimetype")) {
-            this.setMimetype(json.getAsString("mimetype"));
-        }
-        if (fromFile) {
-            if (json.containsKey("objectType")) {
-                this.setObjectType(json.getAsString("objectType"));
-            }
-            if (json.containsKey("capabilitiesURI")) {
-                this.setCapabilitiesURI(json.getAsString("capabilitiesURI"));
-            }
-            if (json.containsKey("objectID")) {
-                this.setObjectID(json.getAsString("objectID"));
-            }
-            if (json.containsKey("valueRange")) {
-                this.setValuerange(json.getAsString("valueRange"));
-            }
-
-        }
-
-    }
-
-    public void setValue(byte[] bytes) {
-        this.value = new String(bytes);
-    }
-
-    public void decryptData(KMS kms) throws BadRequestException {
-        switch (this.mimetype) {
-            case "application/jose+json": {
-                this.decryptDataFomJOSEJSON(kms);
-                break;
-            }
-        }
-
-    }
-
-    private void decryptDataFomJOSEJSON(KMS kms) throws BadRequestException, ForbiddenException {
-
-        // parse ciphertext as JSON object
-        String cipherText = this.getValue();
-        JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
-        JSONObject json;
-        try {
-            json = (JSONObject) parser.parse(cipherText);
-        } catch (ParseException ex) {
-            LOG.error("Could not parse ciphertext in Object Value");
-            throw new BadRequestException("Could not parse JSON in Object value", ex);
-        }
-        String compactciphertext = JSONCompacter.JSONToCompactJWE(json);
-
-        // set up JWE object
-        JsonWebEncryption jwe = new JsonWebEncryption();
-        try {
-            jwe.setCompactSerialization(compactciphertext);
-        } catch (JoseException ex) {
-            LOG.error("Could not parse JWE compact serialization");
-            throw new BadRequestException("Could not parse JWE compact serialization", ex);
-        }
-
-        // identify the key used for encryption
-        JsonWebKey key = null;
-        String keyid = this.getMetadata().get("cdmi_enc_keyID");
-        if (keyid == null) {
-            // See if the ciphertext has a keyid
-            String jweKid = jwe.getKeyIdHeaderValue();
-            if (jweKid != null && jweKid != "") {
-                keyid = jweKid;
-                key = kms.getKeyByID(keyid);
-            }
-            // else use object-id
-            if (key == null) {
-                key = kms.getKeyByID(this.getObjectID());
-            }
-        } else {
-            key = kms.getKeyByID(keyid);
-        }
-
-        if (key == null) {
-            throw new ForbiddenException("No key available; could not decrypt.");
-        }
-
-        // Figure out whether to use symmetric key or private key
-        if ("oct".equals(key.getKeyType())) {
-            jwe.setKey(key.getKey());
-        } else if ("EC".equals(key.getKeyType()) || "RSA".equals(key.getKeyType())) {
-            PrivateKey sk = ((PublicJsonWebKey) key).getPrivateKey();
-            if (sk != null) {
-                jwe.setKey(sk);
-            } else // only public key available
-            {
-                throw new ForbiddenException("No key available; could not decrypt.");
-            }
-        }
-
-        byte[] plain;
-        try {
-            plain = jwe.getPlaintextBytes();
-        } catch (JoseException ex) {
-            throw new BadRequestException("Could not decrypt ciphertext.");
-        }
-
-        // properly decrypted, update object.
-        this.setMimetype(jwe.getContentTypeHeaderValue()); //set the mime type here to decrypted format
-        this.getMetadata().remove("cdmi_enc_keyID");
-        this.setValue(Base64.encodeBase64Chunked(plain));
-        this.setValueTransferEncoding("base64");
-        this.setMetadata("cdmi_size", Integer.toString(this.getValue().length()));
-    }
-
-    public void encryptData(String targetmime, String enckeyid, KMS kms) throws BadRequestException {
-        JsonWebKey encjwk = kms.getKeyByID(enckeyid);
-        encryptData(targetmime, encjwk);
-
-    }
-
-    public void encryptData(String targetmime, JsonWebKey encjwk) throws BadRequestException {
-        try {
-            switch (targetmime) {
-                case MediaTypes.JOSEJSON: {
-                    encryptDataToJOSEJSON(encjwk);
-                    break;
-                }
-                default:
-                    throw new BadRequestException("Encrypting to " + targetmime + " is not supported");
-            }
-        } catch (JoseException ex) {
-            throw new BadRequestException("Encrypting to " + targetmime + " has failed", ex);
-        }
-
-    }
-
-    private void encryptDataToJOSEJSON(JsonWebKey key) throws JoseException {
-
-        // decode the plaintext from Base64 if necessary
-        byte[] plain = null;
-        if ("base64".equals(this.getValueTransferEncoding())) {
-            plain = Base64.decodeBase64(this.getValue());
-        } else if ("utf-8".equals(this.getValueTransferEncoding())) {
-            try {
-                plain = this.getValue().getBytes("UTF-8");
-            } catch (UnsupportedEncodingException ex) {
-                java.util.logging.Logger.getLogger(PathResource.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        JsonWebEncryption jwe = new JsonWebEncryption();
-        jwe.setPlaintext(plain);
-        jwe.setKey(key.getKey());
-        jwe.setKeyIdHeaderValue(key.getKeyId());
-        jwe.setAlgorithmHeaderValue(key.getAlgorithm());
-        jwe.setContentTypeHeaderValue(this.getMimetype());
-        jwe.setEncryptionMethodHeaderParameter("A256GCM");
-        String ciphertext = jwe.getCompactSerialization();
-
-        JSONObject cip = JSONCompacter.CompactJWEToJSON(ciphertext);
-        //cip.put("cty", doj.getMimetype());
-        //cip.put("kid", key.getKeyId());
-        this.setMetadata("cdmi_enc_keyID", key.getKeyId());
-        this.setMimetype("application/jose+json");
-        this.setValue(cip.toJSONString(JSONStyle.NO_COMPRESS));
-        this.setValueTransferEncoding("utf-8");
-        this.setMetadata("cdmi_size", Integer.toString(this.getValue().length()));
-    }
-
-    
-    public void mergeDataObject(DataObject newDob) {
-        if (newDob.getValue() != null) {
-            this.setValue(newDob.getValue());
-            this.setMetadata("cdmi_size", Integer.toString(newDob.getValue().length()));
-        }
-        if (newDob.getMimetype() != null) {
-            this.setMimetype(newDob.getMimetype());
-        }
-        if (newDob.getMetadata() != null) {
-            Map<String, String> metadata = newDob.getMetadata();
-            Set<String> keySet = metadata.keySet();
-            Iterator it = keySet.iterator();
-            while (it.hasNext()) {
-                String key = (String) it.next();
-                if (key != null) {
-                    this.setMetadata(key, metadata.get(key));
-                }
-            }
-        }  
-    }
-   
-    
-    
+	private static final Logger LOG = LoggerFactory.getLogger(DataObject.class);
+
+	// DataObject creation fields
+	private String mimetype;
+	private Map<String, String> metadata = new HashMap<String, String>();
+	private String deserialize;
+	private String serialize;
+	private String copy;
+	private String move;
+	private String reference;
+	private String value;
+	private byte[] binaryValue;
+	// DataObject representation fields
+	private String objectType;
+	private String objectID;
+	private String objectName;
+	private String parentURI;
+	private String accountURI;
+	private String capabilitiesURI;
+	private String completionStatus;
+	private Integer percentComplete; // FIXME - Specification says String but
+										// that does not make
+	// sense
+	private String valuerange;
+	private String valueTransferEncoding;
+
+	// Representation also includes "mimetype", "metadata", and "value" from
+	// creation fields
+	//
+	public String getMimetype() {
+		return mimetype;
+	}
+
+	public void setMimetype(String mimetype) {
+		this.mimetype = mimetype;
+	}
+
+	public Map<String, String> getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(String key, String val) {
+		metadata.put(key, val);
+	}
+
+	public String getDeserialize() {
+		return deserialize;
+	}
+
+	public void setDeserialize(String deserialize) {
+		this.deserialize = deserialize;
+	}
+
+	public String getSerialize() {
+		return serialize;
+	}
+
+	public void setSerialize(String serialize) {
+		this.serialize = serialize;
+	}
+
+	public String getCopy() {
+		return copy;
+	}
+
+	public void setCopy(String copy) {
+		this.copy = copy;
+	}
+
+	public String getMove() {
+		return move;
+	}
+
+	public void setMove(String move) {
+		this.move = move;
+	}
+
+	public String getReference() {
+		return reference;
+	}
+
+	public void setReference(String reference) {
+		this.reference = reference;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+	public String getObjectType() {
+		return objectType;
+	}
+
+	public void setObjectType(String objectURI) {
+		this.objectType = objectURI;
+	}
+
+	public String getObjectID() {
+		return objectID;
+	}
+
+	public void setObjectID(String objectID) {
+		this.objectID = objectID;
+	}
+
+	public String getObjectName() {
+		return objectName;
+	}
+
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
+	}
+
+	public String getParentURI() {
+		return parentURI;
+	}
+
+	public void setParentURI(String parentURI) {
+		this.parentURI = parentURI;
+	}
+
+	public String getAccountURI() {
+		return accountURI;
+	}
+
+	public void setAccountURI(String accountURI) {
+		this.accountURI = accountURI;
+	}
+
+	public String getCapabilitiesURI() {
+		return capabilitiesURI;
+	}
+
+	public void setCapabilitiesURI(String capabilitiesURI) {
+		this.capabilitiesURI = capabilitiesURI;
+	}
+
+	public String getCompletionStatus() {
+		return completionStatus;
+	}
+
+	public void setCompletionStatus(String completionStatus) {
+		this.completionStatus = completionStatus;
+	}
+
+	public Integer getPercentComplete() {
+		return percentComplete;
+	}
+
+	public void setPercentComplete(Integer percentComplete) {
+		this.percentComplete = percentComplete;
+	}
+
+	public void setValueTransferEncoding(String valueTransferEncoding) {
+		this.valueTransferEncoding = valueTransferEncoding;
+	}
+
+	public String getValueTransferEncoding() {
+		return this.valueTransferEncoding;
+	}
+
+	public String getValuerange() {
+		return valuerange;
+	}
+
+	public void setValuerange(String valuerange) {
+		this.valuerange = valuerange;
+	}
+
+	public String toJson() throws Exception {
+		//
+		try {
+			JSONObject j = new JSONObject();
+
+			//
+			if (objectType != null) {
+				j.put("objectType", objectType);
+			}
+			if (objectName != null) {
+				j.put("objectName", objectName);
+			}
+			if (capabilitiesURI != null) {
+				j.put("capabilitiesURI", capabilitiesURI);
+			}
+			if (objectID != null) {
+				j.put("objectID", objectID);
+			}
+			if (mimetype != null) {
+				j.put("mimetype", mimetype);
+			}
+			//
+			JSONObject m = new JSONObject();
+			for (Map.Entry<String, String> entry : metadata.entrySet()) {
+				m.put(entry.getKey(), entry.getValue());
+			}
+			j.put("metadata", m);
+			//
+
+			if (valueTransferEncoding != null) {
+				j.put("valueTransferEncoding", valueTransferEncoding);
+			}
+			if (value != null) {
+				j.put("valueRange", value.length() + "");
+			}
+			if (value != null) {
+				j.put("value", value);
+			}
+
+			return j.toJSONString(JSONStyle.NO_COMPRESS);
+			//
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+			// return ("Error : " + ex);
+		}
+		//
+
+	}
+
+	public String metadataToJson() throws Exception {
+		//
+		try {
+			JSONObject j = new JSONObject();
+			if (objectType != null) {
+				j.put("objectType", objectType);
+			}
+			if (capabilitiesURI != null) {
+				j.put("capabilitiesURI", capabilitiesURI);
+			}
+			if (objectID != null) {
+				j.put("objectID", objectID);
+			}
+			if (objectName != null) {
+				j.put("objectName", objectName);
+			}
+			if (mimetype != null) {
+				j.put("mimetype", mimetype);
+			}
+			if (valueTransferEncoding != null) {
+				j.put("valuetransferencoding", valueTransferEncoding);
+			}
+
+			//
+			JSONObject m = new JSONObject();
+			for (Map.Entry<String, String> entry : metadata.entrySet()) {
+				m.put(entry.getKey(), entry.getValue());
+			}
+			j.put("metadata", m);
+
+			return j.toJSONString(JSONStyle.NO_COMPRESS);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw ex;
+			// return ("Error : " + ex);
+		}
+		//
+	}
+
+	public void fromJson(InputStream jsonIs, boolean fromFile)
+			throws ParseException {
+		JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject json = (JSONObject) jp.parse(jsonIs);
+		fromJson(json, fromFile);
+	}
+
+	public void fromJson(byte[] jsonBytes, boolean fromFile)
+			throws ParseException {
+		JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject json = (JSONObject) jp.parse(jsonBytes);
+		fromJson(json, fromFile);
+	}
+
+	private void fromJson(JSONObject json, boolean fromFile) {
+
+		if (json.containsKey("metadata")) {
+			JSONObject m = (JSONObject) json.get("metadata");
+
+			for (Map.Entry<String, Object> entry : m.entrySet()) {
+				this.getMetadata().put(entry.getKey(),
+						(String) entry.getValue());
+			}
+
+		}
+		if (json.containsKey("valuetransferencoding")) {
+			String vte = json.getAsString("valuetransferencoding");
+			this.setValueTransferEncoding(vte);
+		} else {
+			this.setValueTransferEncoding("utf-8");
+		}
+
+		if (json.containsKey("value")) {
+
+			// handling JSON input
+			// parser automatically processes JSON subobject as utf-8
+			if ("json".equals(getValueTransferEncoding())) {
+				setValueTransferEncoding("utf-8");
+			}
+
+			String v = json.getAsString("value");
+			this.setValue(v);
+		}
+
+		if (json.containsKey("objectName")) {
+			this.setObjectName(json.getAsString("objectName"));
+		}
+
+		if (json.containsKey("mimetype")) {
+			this.setMimetype(json.getAsString("mimetype"));
+		}
+		if (fromFile) {
+			if (json.containsKey("objectType")) {
+				this.setObjectType(json.getAsString("objectType"));
+			}
+			if (json.containsKey("capabilitiesURI")) {
+				this.setCapabilitiesURI(json.getAsString("capabilitiesURI"));
+			}
+			if (json.containsKey("objectID")) {
+				this.setObjectID(json.getAsString("objectID"));
+			}
+			if (json.containsKey("valueRange")) {
+				this.setValuerange(json.getAsString("valueRange"));
+			}
+
+		}
+
+	}
+
+	public void setValue(byte[] bytes) {
+		this.value = new String(bytes);
+	}
+
+	public void decryptData(KMS kms) throws BadRequestException {
+		switch (this.mimetype) {
+		case "application/jose+json": {
+			this.decryptDataFomJOSEJSON(kms);
+			break;
+		}
+		}
+
+	}
+
+	public void decryptDataFomJOSEJSON(JsonWebKey jwk) {
+		// parse ciphertext as JSON object
+		String cipherText = this.getValue();
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject json;
+		try {
+			json = (JSONObject) parser.parse(cipherText);
+		} catch (ParseException ex) {
+			LOG.error("Could not parse ciphertext in Object Value");
+			throw new BadRequestException(
+					"Could not parse JSON in Object value", ex);
+		}
+		String compactciphertext = JSONCompacter.JSONToCompactJWE(json);
+
+		// set up JWE object
+		JsonWebEncryption jwe = new JsonWebEncryption();
+		try {
+			jwe.setCompactSerialization(compactciphertext);
+		} catch (JoseException ex) {
+			LOG.error("Could not parse JWE compact serialization");
+			throw new BadRequestException(
+					"Could not parse JWE compact serialization", ex);
+		}
+
+		// Figure out whether to use symmetric key or private key
+		if ("oct".equals(jwk.getKeyType())) {
+			jwe.setKey(jwk.getKey());
+		} else if ("EC".equals(jwk.getKeyType())
+				|| "RSA".equals(jwk.getKeyType())) {
+			PrivateKey sk = ((PublicJsonWebKey) jwk).getPrivateKey();
+			if (sk != null) {
+				jwe.setKey(sk);
+			} else // only public key available
+			{
+				throw new ForbiddenException(
+						"No key available; could not decrypt.");
+			}
+		}
+
+		byte[] plain;
+		try {
+			plain = jwe.getPlaintextBytes();
+		} catch (JoseException ex) {
+			throw new BadRequestException("Could not decrypt ciphertext.");
+		}
+
+		// properly decrypted, update object.
+		this.setMimetype(jwe.getContentTypeHeaderValue()); // set the mime type
+		this.getMetadata().remove("cdmi_enc_keyID");
+		this.setValue(Base64.encodeBase64Chunked(plain));
+		this.setValueTransferEncoding("base64");
+		this.setMetadata("cdmi_size",
+				Integer.toString(this.getValue().length()));
+
+	}
+
+	private void decryptDataFomJOSEJSON(KMS kms) throws BadRequestException,
+			ForbiddenException {
+
+		// parse ciphertext as JSON object
+		String cipherText = this.getValue();
+		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+		JSONObject json;
+		try {
+			json = (JSONObject) parser.parse(cipherText);
+		} catch (ParseException ex) {
+			LOG.error("Could not parse ciphertext in Object Value");
+			throw new BadRequestException(
+					"Could not parse JSON in Object value", ex);
+		}
+		String compactciphertext = JSONCompacter.JSONToCompactJWE(json);
+
+		// set up JWE object
+		JsonWebEncryption jwe = new JsonWebEncryption();
+		try {
+			jwe.setCompactSerialization(compactciphertext);
+		} catch (JoseException ex) {
+			LOG.error("Could not parse JWE compact serialization");
+			throw new BadRequestException(
+					"Could not parse JWE compact serialization", ex);
+		}
+
+		// identify the key used for encryption
+		JsonWebKey key = null;
+		String keyid = this.getMetadata().get("cdmi_enc_keyID");
+		if (keyid == null) {
+			// See if the ciphertext has a keyid
+			String jweKid = jwe.getKeyIdHeaderValue();
+			if (jweKid != null && jweKid != "") {
+				keyid = jweKid;
+				key = kms.getKeyByID(keyid);
+			}
+			// else use object-id
+			if (key == null) {
+				key = kms.getKeyByID(this.getObjectID());
+			}
+		} else {
+			key = kms.getKeyByID(keyid);
+		}
+
+		if (key == null) {
+			throw new ForbiddenException("No key available; could not decrypt.");
+		}
+
+		// Figure out whether to use symmetric key or private key
+		if ("oct".equals(key.getKeyType())) {
+			jwe.setKey(key.getKey());
+		} else if ("EC".equals(key.getKeyType())
+				|| "RSA".equals(key.getKeyType())) {
+			PrivateKey sk = ((PublicJsonWebKey) key).getPrivateKey();
+			if (sk != null) {
+				jwe.setKey(sk);
+			} else // only public key available
+			{
+				throw new ForbiddenException(
+						"No key available; could not decrypt.");
+			}
+		}
+
+		byte[] plain;
+		try {
+			plain = jwe.getPlaintextBytes();
+		} catch (JoseException ex) {
+			throw new BadRequestException("Could not decrypt ciphertext.");
+		}
+
+		// properly decrypted, update object.
+		this.setMimetype(jwe.getContentTypeHeaderValue()); // set the mime type
+															// here to decrypted
+															// format
+		this.getMetadata().remove("cdmi_enc_keyID");
+		this.setValue(Base64.encodeBase64Chunked(plain));
+		this.setValueTransferEncoding("base64");
+		this.setMetadata("cdmi_size",
+				Integer.toString(this.getValue().length()));
+	}
+
+	public void encryptData(String targetmime, String enckeyid, KMS kms)
+			throws BadRequestException {
+		JsonWebKey encjwk = kms.getKeyByID(enckeyid);
+		encryptData(targetmime, encjwk);
+
+	}
+
+	public void encryptData(String targetmime, JsonWebKey encjwk)
+			throws BadRequestException {
+		try {
+			switch (targetmime) {
+			case MediaTypes.JOSEJSON: {
+				encryptDataToJOSEJSON(encjwk);
+				break;
+			}
+			default:
+				throw new BadRequestException("Encrypting to " + targetmime
+						+ " is not supported");
+			}
+		} catch (JoseException ex) {
+			throw new BadRequestException("Encrypting to " + targetmime
+					+ " has failed", ex);
+		}
+
+	}
+
+	private void encryptDataToJOSEJSON(JsonWebKey key) throws JoseException {
+
+		// decode the plaintext from Base64 if necessary
+		byte[] plain = null;
+		if ("base64".equals(this.getValueTransferEncoding())) {
+			plain = Base64.decodeBase64(this.getValue());
+		} else if ("utf-8".equals(this.getValueTransferEncoding())) {
+			try {
+				plain = this.getValue().getBytes("UTF-8");
+			} catch (UnsupportedEncodingException ex) {
+				java.util.logging.Logger
+						.getLogger(PathResource.class.getName()).log(
+								Level.SEVERE, null, ex);
+			}
+		}
+
+		JsonWebEncryption jwe = new JsonWebEncryption();
+		jwe.setPlaintext(plain);
+		jwe.setKey(key.getKey());
+		jwe.setKeyIdHeaderValue(key.getKeyId());
+		jwe.setAlgorithmHeaderValue(key.getAlgorithm());
+		jwe.setContentTypeHeaderValue(this.getMimetype());
+		jwe.setEncryptionMethodHeaderParameter("A256GCM");
+		String ciphertext = jwe.getCompactSerialization();
+
+		JSONObject cip = JSONCompacter.CompactJWEToJSON(ciphertext);
+		// cip.put("cty", doj.getMimetype());
+		// cip.put("kid", key.getKeyId());
+		this.setMetadata("cdmi_enc_keyID", key.getKeyId());
+		this.setMimetype("application/jose+json");
+		this.setValue(cip.toJSONString(JSONStyle.NO_COMPRESS));
+		this.setValueTransferEncoding("utf-8");
+		this.setMetadata("cdmi_size",
+				Integer.toString(this.getValue().length()));
+	}
+
+	public void mergeDataObject(DataObject newDob) {
+		if (newDob.getValue() != null) {
+			this.setValue(newDob.getValue());
+			this.setMetadata("cdmi_size",
+					Integer.toString(newDob.getValue().length()));
+		}
+		if (newDob.getMimetype() != null) {
+			this.setMimetype(newDob.getMimetype());
+		}
+		if (newDob.getMetadata() != null) {
+			Map<String, String> metadata = newDob.getMetadata();
+			Set<String> keySet = metadata.keySet();
+			Iterator it = keySet.iterator();
+			while (it.hasNext()) {
+				String key = (String) it.next();
+				if (key != null) {
+					this.setMetadata(key, metadata.get(key));
+				}
+			}
+		}
+	}
+
 }
