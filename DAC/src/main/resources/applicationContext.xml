@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://cxf.apache.org/jaxrs
+    http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+	<!-- Apache CXF Server Configuration -->
+	<jaxrs:server id="dacService" address="/">
+		<jaxrs:serviceBeans>
+			<ref bean="pathResource" />
+		</jaxrs:serviceBeans>
+	</jaxrs:server>
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>dac.properties</value>
+		</property>
+	</bean>
+
+	<bean id="aclObj" class="com.philips.model.ACLObject" />
+	
+	<bean id="aclContainerDao" class="com.philips.daoImp.ACLContainerDaoImp">
+		<property name="baseDirectoryName" value="${dac.base-directory}" />
+	</bean>
+	<bean id="aclObjectDao" class="com.philips.daoImp.ACLObjectDaoImp">
+		<property name="baseDirectoryName" value="${dac.base-directory}" />
+	</bean>
+	
+	<bean id="pathResource" class="com.philips.resource.PathResource"
+		scope="prototype">
+		<property name="aclObjectDao" ref="aclObjectDao"></property>
+		<property name="aclContainerDao" ref="aclContainerDao"></property>
+	</bean>
+
+
+</beans>
