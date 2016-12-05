@@ -10,11 +10,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import net.minidev.json.parser.ParseException;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.snia.cdmiserver.model.DataObject;
+import org.snia.cdmiserver.util.ACLIdentifier;
 
 /**
  *
@@ -31,11 +38,16 @@ public class DacRequest {
     public void setPath(String path) {
         this.path = path;
     }
+    
+    
+    public DacResponseEntity operation(Request.Method method, DacRequestEntity entity) throws URISyntaxException, IOException{
+    	return operation(method,entity.getJSONDacReqEntity());
+    }
 
     public DacResponseEntity operation(Request.Method method, String entity) throws URISyntaxException, IOException {
         Request req = new Request(method, path);
 
-        HttpResponse response = req.withContentType("application/dac-object").withAuthorization("Wang").withEntity(entity).send();
+        HttpResponse response = req.withContentType("application/dac-object").withEntity(entity).send();
 
         HttpEntity httpEntity = response.getEntity();
         InputStream instreams = httpEntity.getContent();
@@ -58,5 +70,40 @@ public class DacRequest {
         return resEntity;
 
     }
+    
+    public DacRequestEntity getRequestEntity(String user,DataObject dObj,CdmiOperation.Opertion operation,String keyId){
+    	return getRequestEntity(user,dObj,operation.toString(),keyId);
+    }
+    
+    public DacRequestEntity getRequestEntity(String user,DataObject dObj,CdmiOperation.Opertion operation){
+    	return getRequestEntity(user,dObj,operation.toString(),null);
+    }
+    
+    public DacRequestEntity getRequestEntity(String user,DataObject dObj,String operation,String keyId){
+    	String identifier;
+//		user = headers.getRequestHeader("user").get(0);
+		if (user == null) {
+			identifier = ACLIdentifier.ANONYMOUS;
+		} else if (user.equals(dObj.getMetadata().get("cdmiOwner"))) {
+			identifier = ACLIdentifier.OWNER;
+		} else {
+			identifier = ACLIdentifier.AUTHENTICATED;
+		}
+		Map<String, String> clientIdentity = new HashMap<String, String>();
+		clientIdentity.put("acl_name", user);
+		clientIdentity.put("acl_group", identifier);
+		
+		DacRequestEntity reqEntity = new DacRequestEntity();
+		reqEntity
+				.withCdmiObjectId(dObj.getObjectID())
+				.withDacRequestId(UUID.randomUUID().toString())
+				.withAclEffectiveMask(operation)
+				.withClientIdentity(clientIdentity).withCdmiEncKeyId(keyId);
+    	
+		return reqEntity;    	
+    }
+    
+    
+    
 
 }

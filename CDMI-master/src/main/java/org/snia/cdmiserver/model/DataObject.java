@@ -30,8 +30,9 @@
  */
 package org.snia.cdmiserver.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.PrivateKey;
 import java.util.HashMap;
@@ -39,16 +40,21 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+
 import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.snia.cdmiserver.exception.BadRequestException;
@@ -329,31 +335,43 @@ public class DataObject {
 
 	public void fromJson(InputStream jsonIs, boolean fromFile)
 			throws ParseException {
-		JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
-		JSONObject json = (JSONObject) jp.parse(jsonIs);
+		
+		JsonObject json = Json.createReader(jsonIs).readObject();
 		fromJson(json, fromFile);
 	}
 
 	public void fromJson(byte[] jsonBytes, boolean fromFile)
 			throws ParseException {
-		JSONParser jp = new JSONParser(JSONParser.MODE_PERMISSIVE);
-		JSONObject json = (JSONObject) jp.parse(jsonBytes);
+		ByteArrayInputStream is=new ByteArrayInputStream(jsonBytes);
+		JsonObject json = Json.createReader(is).readObject();
 		fromJson(json, fromFile);
 	}
 
-	private void fromJson(JSONObject json, boolean fromFile) {
+	private void fromJson(JsonObject json, boolean fromFile) {
 
 		if (json.containsKey("metadata")) {
-			JSONObject m = (JSONObject) json.get("metadata");
+			JsonObject m = json.getJsonObject("metadata");
 
-			for (Map.Entry<String, Object> entry : m.entrySet()) {
-				this.getMetadata().put(entry.getKey(),
-						(String) entry.getValue());
+			for (String entry : m.keySet()) {
+				JsonValue v = m.get(entry);
+				if (v.getValueType() != null) {
+					if (v.getValueType().equals(ValueType.STRING)) {
+						JsonString s = (JsonString) v;
+						this.getMetadata().put(entry, s.getString());
+					}
+					if (v.getValueType().equals(ValueType.OBJECT)) {
+						JsonObject o = (JsonObject) v;
+						ByteArrayOutputStream os = new ByteArrayOutputStream();
+						Json.createWriter(os).writeObject(o);
+						this.getMetadata().put(entry, os.toString());
+					}
+				}
+
 			}
 
 		}
 		if (json.containsKey("valuetransferencoding")) {
-			String vte = json.getAsString("valuetransferencoding");
+			String vte = json.getString("valuetransferencoding");
 			this.setValueTransferEncoding(vte);
 		} else {
 			this.setValueTransferEncoding("utf-8");
@@ -367,29 +385,29 @@ public class DataObject {
 				setValueTransferEncoding("utf-8");
 			}
 
-			String v = json.getAsString("value");
+			String v = json.getString("value");
 			this.setValue(v);
 		}
 
 		if (json.containsKey("objectName")) {
-			this.setObjectName(json.getAsString("objectName"));
+			this.setObjectName(json.getString("objectName"));
 		}
 
 		if (json.containsKey("mimetype")) {
-			this.setMimetype(json.getAsString("mimetype"));
+			this.setMimetype(json.getString("mimetype"));
 		}
 		if (fromFile) {
 			if (json.containsKey("objectType")) {
-				this.setObjectType(json.getAsString("objectType"));
+				this.setObjectType(json.getString("objectType"));
 			}
 			if (json.containsKey("capabilitiesURI")) {
-				this.setCapabilitiesURI(json.getAsString("capabilitiesURI"));
+				this.setCapabilitiesURI(json.getString("capabilitiesURI"));
 			}
 			if (json.containsKey("objectID")) {
-				this.setObjectID(json.getAsString("objectID"));
+				this.setObjectID(json.getString("objectID"));
 			}
 			if (json.containsKey("valueRange")) {
-				this.setValuerange(json.getAsString("valueRange"));
+				this.setValuerange(json.getString("valueRange"));
 			}
 
 		}
@@ -595,7 +613,7 @@ public class DataObject {
 		jwe.setKeyIdHeaderValue(key.getKeyId());
 		jwe.setAlgorithmHeaderValue(key.getAlgorithm());
 		jwe.setContentTypeHeaderValue(this.getMimetype());
-		jwe.setEncryptionMethodHeaderParameter("A256GCM");
+		jwe.setEncryptionMethodHeaderParameter(org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers.AES_128_GCM);
 		String ciphertext = jwe.getCompactSerialization();
 
 		JSONObject cip = JSONCompacter.CompactJWEToJSON(ciphertext);
