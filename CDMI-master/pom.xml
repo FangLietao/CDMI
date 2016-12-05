@@ -165,6 +165,13 @@
     <artifactId>json-smart</artifactId>
     <version>2.2</version>
 </dependency>
+<!-- https://mvnrepository.com/artifact/org.glassfish/javax.json -->
+<dependency>
+    <groupId>org.glassfish</groupId>
+    <artifactId>javax.json</artifactId>
+    <version>1.0.4</version>
+</dependency>
+
 <dependency>
     <groupId>org.bitbucket.b_c</groupId>
     <artifactId>jose4j</artifactId>

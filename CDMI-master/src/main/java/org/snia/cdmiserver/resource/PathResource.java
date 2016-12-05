@@ -32,11 +32,13 @@ package org.snia.cdmiserver.resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -53,6 +55,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Variant;
+
 import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
 import org.jose4j.jwk.JsonWebKey;
 import org.snia.cdmiserver.dacHttp.CdmiOperation;
@@ -62,10 +65,12 @@ import org.snia.cdmiserver.exception.BadRequestException;
 import org.snia.cdmiserver.exception.ForbiddenException;
 import org.snia.cdmiserver.model.Container;
 import org.snia.cdmiserver.model.DataObject;
+import org.snia.cdmiserver.dacHttp.CdmiOperation.Opertion;
 import org.snia.cdmiserver.dacHttp.DacRequest;
 import org.snia.cdmiserver.dacHttp.DacRequestEntity;
 import org.snia.cdmiserver.dacHttp.DacResponseEntity;
 import org.snia.cdmiserver.dacHttp.Request;
+import org.snia.cdmiserver.dacHttp.Request.Method;
 import org.snia.cdmiserver.util.ACLIdentifier;
 import org.snia.cdmiserver.util.MediaTypes;
 import org.snia.cdmiserver.util.ObjectID;
@@ -129,33 +134,15 @@ public class PathResource {
 					&& headers.getRequestHeader("cdmi_dac_uri") != null) {
 
 				// dac
-				String identifier;
 				String user = headers.getRequestHeader("user").get(0);
-				if (user == null) {
-					identifier = ACLIdentifier.ANONYMOUS;
-				} else if (user.equals(dObj.getMetadata().get("cdmiOwner"))) {
-					identifier = ACLIdentifier.OWNER;
-				} else {
-					identifier = ACLIdentifier.AUTHENTICATED;
-				}
-				Map<String, String> clientIdentity = new HashMap<String, String>();
-				clientIdentity.put("acl_name", user);
-				clientIdentity.put("acl_group", identifier);
-
 				DacRequest dac = new DacRequest();
-				DacRequestEntity reqEntity = new DacRequestEntity();
-				reqEntity
-						.withCdmiObjectId(dObj.getObjectID())
-						.withDacRequestId(UUID.randomUUID().toString())
-						.withAclEffectiveMask(
-								CdmiOperation.Opertion.cdmiDelete.toString())
-						.withClientIdentity(clientIdentity);
-
+				DacRequestEntity reqEntity = dac.getRequestEntity(user, dObj,
+						CdmiOperation.Opertion.cdmiDelete);
 				DacResponseEntity resEntity = dac.operation(
 						Request.Method.POST, reqEntity.getJSONDacReqEntity());
 				String dacAppliedMask = resEntity.getDacAppliedMask();
 				if ((Integer.parseInt(dacAppliedMask.substring(2,
-						dacAppliedMask.length() - 1), 16) & 0x00000040) != 0x00000040) {
+						dacAppliedMask.length()), 16) & 0x00000040) != 0x00000040) {
 					return Response.status(Response.Status.FORBIDDEN)
 							.tag("no authority").build();
 				}
@@ -256,41 +243,28 @@ public class PathResource {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			} else {
 
-				if (headers.getRequestHeader("cdmi_dac_certificate") != null
-						&& headers.getRequestHeader("cdmi_dac_uri") != null) {
+				if (headers.getRequestHeader("cdmi_dac_certificate").size() != 0
+						&& headers.getRequestHeader("cdmi_dac_uri").size() != 0) {
+
 					// dac
-					String identifier;
-					if (headers.getRequestHeader("user").get(0) == null) {
-						identifier = ACLIdentifier.ANONYMOUS;
-					} else if (headers.getRequestHeader("user").get(0)
-							.equals(dObj.getMetadata().get("cdmiOwner"))) {
-						identifier = ACLIdentifier.OWNER;
-					} else {
-						identifier = ACLIdentifier.AUTHENTICATED;
+					String user = null;
+					if (headers.getRequestHeader("user").size() != 0) {
+						user = headers.getRequestHeader("user").get(0);
 					}
-					Map<String, String> clientIdentity = new HashMap<String, String>();
-					clientIdentity.put("acl_group", identifier);
-					clientIdentity.put("acl_name",
-							headers.getRequestHeader("user").get(0));
 
-					DacRequest dac = new DacRequest();
-					DacRequestEntity reqEntity = new DacRequestEntity();
-					reqEntity
-							.withCdmiObjectId(dObj.getObjectID())
-							.withDacRequestId(UUID.randomUUID().toString())
-							.withAclEffectiveMask(
-									CdmiOperation.Opertion.cdmiRead.toString())
-							.withClientIdentity(clientIdentity);
-
-					DacResponseEntity resEntity = dac.operation(
-							Request.Method.POST,
-							reqEntity.getJSONDacReqEntity());
-					String dacAppliedMask = resEntity.getDacAppliedMask();
+					DacRequest dacRequest = new DacRequest();
+					DacRequestEntity dacReqEntity = dacRequest
+							.getRequestEntity(user, dObj,
+									CdmiOperation.Opertion.cdmiRead);
+					DacResponseEntity dacResEntity = dacRequest.operation(
+							Request.Method.POST, dacReqEntity);
+					String dacAppliedMask = dacResEntity.getDacAppliedMask();
 					if ((Integer.parseInt(dacAppliedMask.substring(2,
-							dacAppliedMask.length() - 1), 16) & 0x00000001) != 0x00000001) {
+							dacAppliedMask.length()), 16) & 0x00000001) != 0x00000001) {
 						return Response.status(Response.Status.FORBIDDEN)
 								.tag("no authority").build();
 					}
+
 				} else {
 					// acl
 					// acl have not be achieved
@@ -437,7 +411,7 @@ public class PathResource {
 							reqEntity.getJSONDacReqEntity());
 					String dacAppliedMask = resEntity.getDacAppliedMask();
 					if ((Integer.parseInt(dacAppliedMask.substring(2,
-							dacAppliedMask.length() - 1), 16) & 0x00000001) != 0x00000001) {
+							dacAppliedMask.length()), 16) & 0x00000001) != 0x00000001) {
 						return Response.status(Response.Status.FORBIDDEN)
 								.tag("no authority").build();
 					}
@@ -446,7 +420,8 @@ public class PathResource {
 					// acl
 					// acl have not be achieved
 					String appliedMask = dObj.getMetadata().get("cdmi_acl");
-					System.out.println(appliedMask + "cdmi_acl");
+					System.out.println(appliedMask
+							+ "cdmi_acl has not been implemented");
 				}
 
 				List<MediaType> typeList = headers.getAcceptableMediaTypes();
@@ -462,7 +437,7 @@ public class PathResource {
 						// Do actual decryption
 						if (jwk != null) {
 							dObj.decryptDataFomJOSEJSON(jwk);
-						}else{
+						} else {
 							throw new ForbiddenException("no key");
 						}
 
@@ -648,12 +623,14 @@ public class PathResource {
 						.header("X-CDMI-Specification-Version", "1.0.2")
 						.type(MediaTypes.DATA_OBJECT).entity(respStr).build();
 			}
+
 			// update object
+
 			DataObject newObj = new DataObject();
 			newObj.fromJson(bytes, false);
 
 			// access a key management system
-			KMS kms = KMS.getInstance();
+			// KMS kms = KMS.getInstance();
 
 			if (newObj.getMimetype().equals(MediaTypes.JOSEJSON)) {
 
@@ -663,8 +640,44 @@ public class PathResource {
 					// Existing mimetype is ciphertext
 					// Ciphertext -> Ciphertext
 					// first try to decrypt
+
+					// dac vs acl
+					JsonWebKey oldObjKey = null;
+					if (headers.getRequestHeader("cdmi_dac_certificate").size() != 0
+							&& headers.getRequestHeader("cdmi_dac_uri").size() != 0) {
+
+						// dac
+						String user = null;
+						if (headers.getRequestHeader("user").size() != 0) {
+							user = headers.getRequestHeader("user").get(0);
+						}
+
+						DacRequest dacRequest = new DacRequest();
+						DacRequestEntity dacReqEntity = dacRequest
+								.getRequestEntity(
+										user,
+										oldObj,
+										Opertion.cdmiModify,
+										(String) newObj.getMetadata().get(
+												"cdmi_enc_key_id"));
+						DacResponseEntity dacResEntity = dacRequest.operation(
+								Request.Method.POST, dacReqEntity);
+						String dacAppliedMask = dacResEntity
+								.getDacAppliedMask();
+						if ((Integer.parseInt(
+								dacAppliedMask.substring(2,
+										dacAppliedMask.length()), 16) & 0x00000002) != 0x00000002) {
+							return Response.status(Response.Status.FORBIDDEN)
+									.tag("no authority").build();
+						}
+						oldObjKey = dacResEntity.getDacObjectKey();
+					} else {
+						// acl
+					}
+
 					try {
-						oldObj.decryptData(kms);
+						// oldObj.decryptData(kms);
+						oldObj.decryptDataFomJOSEJSON(oldObjKey);
 					} catch (BadRequestException ex) {
 						// cannot decrypt, internal error
 						LOG.error("Could not decrypt ciphertext", ex);
@@ -678,23 +691,47 @@ public class PathResource {
 					}
 
 					// then reencrypt
-					if (newObj.getMetadata().get("cdmi_enc_keyID") == null) {
-						oldObj.setMetadata("cdmi_enc_keyID",
-								oldObj.getObjectID());
+					/*
+					 * dac server implement
+					 */
+					// if (newObj.getMetadata().get("cdmi_enc_keyID") == null) {
+					// oldObj.setMetadata("cdmi_enc_keyID",
+					// oldObj.getObjectID());
+					// } else {
+					// oldObj.setMetadata("cdmi_enc_keyID", newObj
+					// .getMetadata().get("cdmi_enc_keyID"));
+					// }
+					//
+					// // Fetch key from the KMS, or create new when needed
+					// JsonWebKey key = kms.getKeyByID(oldObj.getMetadata().get(
+					// "cdmi_enc_keyID"));
+					// if (key == null) {
+					// key = kms.createKeyA256KW(oldObj.getMetadata().get(
+					// "cdmi_enc_keyID"));
+					// }
+					JsonWebKey newObjKey = null;
+					// get new key
+					if (headers.getRequestHeader("cdmi_dac_certificate").size() != 0
+							&& headers.getRequestHeader("cdmi_dac_uri").size() != 0) {
+
+						// dac
+						String user = null;
+						if (headers.getRequestHeader("user").size() != 0) {
+							user = headers.getRequestHeader("user").get(0);
+						}
+						DacRequest dacRequest = new DacRequest();
+						DacRequestEntity dacReqEntity = dacRequest
+								.getRequestEntity(user, newObj,
+										CdmiOperation.Opertion.cdmiModify);
+						DacResponseEntity dacResEntity = dacRequest.operation(
+								Request.Method.POST, dacReqEntity);
+						newObjKey = dacResEntity.getDacObjectKey();
 					} else {
-						oldObj.setMetadata("cdmi_enc_keyID", newObj
-								.getMetadata().get("cdmi_enc_keyID"));
+						// acl *************
 					}
 
-					// Fetch key from the KMS, or create new when needed
-					JsonWebKey key = kms.getKeyByID(oldObj.getMetadata().get(
-							"cdmi_enc_keyID"));
-					if (key == null) {
-						key = kms.createKeyA256KW(oldObj.getMetadata().get(
-								"cdmi_enc_keyID"));
-					}
 					try {
-						oldObj.encryptData(MediaTypes.JOSEJSON, key);
+						oldObj.encryptData(MediaTypes.JOSEJSON, newObjKey);
 					} catch (BadRequestException ex) {
 						// cannot encrypt, internal error
 						LOG.error("Could not encrypt to ciphertext", ex);
@@ -712,23 +749,59 @@ public class PathResource {
 					// Existing mimetype is plaintext
 					// Plain -> Ciphertext
 
-					if (newObj.getMetadata().get("cdmi_enc_keyID") == null) {
-						oldObj.setMetadata("cdmi_enc_keyID",
-								oldObj.getObjectID());
-					} else {
-						oldObj.setMetadata("cdmi_enc_keyID", newObj
-								.getMetadata().get("cdmi_enc_keyID"));
-					}
+					// if (newObj.getMetadata().get("cdmi_enc_keyID") == null) {
+					// oldObj.setMetadata("cdmi_enc_keyID",
+					// oldObj.getObjectID());
+					// } else {
+					// oldObj.setMetadata("cdmi_enc_keyID", newObj
+					// .getMetadata().get("cdmi_enc_keyID"));
+					// }
 
 					// Fetch key from the KMS, or create new when needed
-					JsonWebKey key = kms.getKeyByID(oldObj.getMetadata().get(
-							"cdmi_enc_keyID"));
-					if (key == null) {
-						key = kms.createKeyA256KW(oldObj.getMetadata().get(
-								"cdmi_enc_keyID"));
+					// JsonWebKey key = kms.getKeyByID(oldObj.getMetadata().get(
+					// "cdmi_enc_keyID"));
+					// if (key == null) {
+					// key = kms.createKeyA256KW(oldObj.getMetadata().get(
+					// "cdmi_enc_keyID"));
+					// }
+
+					// dac vs acl
+					JsonWebKey oldObjKey = null;
+					if (headers.getRequestHeader("cdmi_dac_certificate").size() != 0
+							&& headers.getRequestHeader("cdmi_dac_uri").size() != 0) {
+
+						// dac
+						String user = null;
+						if (headers.getRequestHeader("user").size() != 0) {
+							user = headers.getRequestHeader("user").get(0);
+						}
+
+						DacRequest dacRequest = new DacRequest();
+						DacRequestEntity dacReqEntity = dacRequest
+								.getRequestEntity(
+										user,
+										oldObj,
+										Opertion.cdmiModify,
+										(String) newObj.getMetadata().get(
+												"cdmi_enc_key_id"));
+						DacResponseEntity dacResEntity = dacRequest.operation(
+								Request.Method.POST, dacReqEntity);
+						String dacAppliedMask = dacResEntity
+								.getDacAppliedMask();
+						
+						if ((Integer.parseInt(
+								dacAppliedMask.substring(2,
+										dacAppliedMask.length()), 16) & 0x00000002) != 0x00000002) {
+							return Response.status(Response.Status.FORBIDDEN)
+									.tag("no authority").build();
+						}
+						oldObjKey = dacResEntity.getDacObjectKey();
+					} else {
+						// acl
 					}
+
 					try {
-						oldObj.encryptData(MediaTypes.JOSEJSON, key);
+						oldObj.encryptData(MediaTypes.JOSEJSON, oldObjKey);
 					} catch (BadRequestException ex) {
 						// cannot encrypt, internal error
 						LOG.error("Could not encrypt to ciphertext", ex);
@@ -750,8 +823,43 @@ public class PathResource {
 					// Existing mimetype is ciphertext
 					// Ciphertext -> Plain
 					// Try to do the decryption of the object.
+
+					// dac vs acl
+					JsonWebKey oldObjKey = null;
+					if (headers.getRequestHeader("cdmi_dac_certificate").size() != 0
+							&& headers.getRequestHeader("cdmi_dac_uri").size() != 0) {
+
+						// dac
+						String user = null;
+						if (headers.getRequestHeader("user").size() != 0) {
+							user = headers.getRequestHeader("user").get(0);
+						}
+
+						DacRequest dacRequest = new DacRequest();
+						DacRequestEntity dacReqEntity = dacRequest
+								.getRequestEntity(
+										user,
+										oldObj,
+										Opertion.cdmiModify,
+										(String) oldObj.getMetadata().get(
+												"cdmi_enc_keyID"));
+						DacResponseEntity dacResEntity = dacRequest.operation(
+								Request.Method.POST, dacReqEntity);
+						String dacAppliedMask = dacResEntity
+								.getDacAppliedMask();
+						if ((Integer.parseInt(
+								dacAppliedMask.substring(2,
+										dacAppliedMask.length()), 16) & 0x00000002) != 0x00000002) {
+							return Response.status(Response.Status.FORBIDDEN)
+									.tag("no authority").build();
+						}
+						oldObjKey = dacResEntity.getDacObjectKey();
+					} else {
+						// acl
+					}
+
 					try {
-						oldObj.decryptData(kms);
+						oldObj.decryptDataFomJOSEJSON(oldObjKey);
 					} catch (BadRequestException ex) {
 						// cannot decrypt, internal error
 						LOG.error("Could not decrypt ciphertext", ex);
@@ -773,6 +881,35 @@ public class PathResource {
 				} else {
 					// Existing mimetype is plaintext
 					// Plain -> Plain
+					
+					// dac vs acl					
+					if (headers.getRequestHeader("cdmi_dac_certificate").size() != 0
+							&& headers.getRequestHeader("cdmi_dac_uri").size() != 0) {
+
+						// dac
+						String user = null;
+						if (headers.getRequestHeader("user").size() != 0) {
+							user = headers.getRequestHeader("user").get(0);
+						}
+
+						DacRequest dacRequest = new DacRequest();
+						DacRequestEntity dacReqEntity = dacRequest
+								.getRequestEntity(user, oldObj,
+										Opertion.cdmiModify);
+						DacResponseEntity dacResEntity = dacRequest.operation(
+								Request.Method.POST, dacReqEntity);
+						String dacAppliedMask = dacResEntity
+								.getDacAppliedMask();
+						if ((Integer.parseInt(
+								dacAppliedMask.substring(2,
+										dacAppliedMask.length()), 16) & 0x00000002) != 0x00000002) {
+							return Response.status(Response.Status.FORBIDDEN)
+									.tag("no authority").build();
+						}						
+					} else {
+						// acl
+					}
+					
 					oldObj.mergeDataObject(newObj);
 					dataObjectDao.deleteByPath(path);
 					dataObjectDao.createByPath(path, oldObj);

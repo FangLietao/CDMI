@@ -116,7 +116,9 @@ public class DacRequestEntity {
 	}
 
 	public DacRequestEntity withCdmiEncKeyId(String cdmiEncKeyId) {
-		this.cdmiEncKeyId = cdmiEncKeyId;
+		if(cdmiEncKeyId!=null){
+			this.cdmiEncKeyId = cdmiEncKeyId;
+		}		
 		return this;
 	}
 
@@ -132,6 +134,7 @@ public class DacRequestEntity {
 	}
 
 	static {
+		//cdmi server public key
 		StringBuilder jsonStr = new StringBuilder();
 		try {
 
