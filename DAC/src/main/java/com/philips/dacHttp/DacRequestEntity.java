@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.lang.JoseException;
+
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
@@ -11,7 +14,7 @@ import net.minidev.json.parser.ParseException;
 public class DacRequestEntity {
 	private String dacRequestVersion = "1";
 	private String dacRequestId;
-	private Map<String, String> serverIdentity;
+	private JsonWebKey serverIdentity;
 	private Map<String, String> clientIdentity;
 	private String aclEffectiveMask;
 	private Map<String, String> clientHeaders;
@@ -29,7 +32,7 @@ public class DacRequestEntity {
 		return dacRequestId;
 	}
 
-	public Map<String, String> getServerIdentity() {
+	public JsonWebKey getServerIdentity() {
 		return serverIdentity;
 	}
 
@@ -77,12 +80,19 @@ public class DacRequestEntity {
 		if (jObj.containsKey("aclEffectiveMask")) {
 			this.aclEffectiveMask = jObj.getAsString("aclEffectiveMask");
 		}
-		if (jObj.containsKey("cdmiEncKeyId")) {
-			this.cdmiEncKeyId = jObj.getAsString("cdmiEncKeyId");
-		}
 		if (jObj.containsKey("cdmiObjectId")) {
 			this.cdmiObjectId = jObj.getAsString("cdmiObjectId");
 		}
+		if (jObj.containsKey("cdmiEncKeyId")) {
+			String keyId = jObj.getAsString("cdmiEncKeyId");
+			if (keyId.equals("objectkey")) {
+				this.cdmiEncKeyId = this.cdmiObjectId;
+			} else {
+				this.cdmiEncKeyId = jObj.getAsString("cdmiEncKeyId");
+			}
+
+		}
+
 		if (jObj.containsKey("cdmiOperation")) {
 			this.cdmiOperation = jObj.getAsString("cdmiOperation");
 		}
@@ -98,13 +108,14 @@ public class DacRequestEntity {
 		}
 
 		if (jObj.containsKey("serverIdentity")) {
-			serverIdentity = new HashMap<String, String>();
-			JSONObject jServerIdentity = (JSONObject) jObj
-					.get("serverIdentity");
-			for (Map.Entry<String, Object> entry : jServerIdentity.entrySet()) {
-				this.serverIdentity.put(entry.getKey(),
-						(String) entry.getValue());
+			try {
+				this.serverIdentity = JsonWebKey.Factory.newJwk(jObj
+						.getAsString("serverIdentity"));
+			} catch (JoseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+
 		}
 
 		if (jObj.containsKey("clientHeaders")) {
@@ -118,7 +129,8 @@ public class DacRequestEntity {
 
 		if (jObj.containsKey("clientIdentity")) {
 			clientIdentity = new HashMap<String, String>();
-			JSONObject jClientIdentity = (JSONObject) jObj.get("clientIdentity");					
+			JSONObject jClientIdentity = (JSONObject) jObj
+					.get("clientIdentity");
 			for (Map.Entry<String, Object> entry : jClientIdentity.entrySet()) {
 				this.clientIdentity.put(entry.getKey(),
 						(String) entry.getValue());

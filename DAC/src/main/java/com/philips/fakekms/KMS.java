@@ -191,6 +191,37 @@ public class KMS {
 
         return newJwk;
     }
+    
+    
+    public synchronized JsonWebKey createKeyA128KW(String kid) throws KMSKeyExistsException {
+
+        // Check if key already exists
+        if (this.getKeyByID(kid) != null) {
+            throw new KMSKeyExistsException("A key with kid " + kid + "already exists within the KMS.");
+        }
+
+        JsonWebKey newJwk;
+
+        // make sure our list is up to date.
+        this.readKeyFile();
+
+        // Generate a random AES key
+        newJwk = OctJwkGenerator.generateJwk(128);
+        newJwk.setKeyId(kid);
+        newJwk.setAlgorithm("A128KW");
+        newJwk.setUse(org.jose4j.jwk.Use.ENCRYPTION);
+
+        // Add it to the keylist
+        jwkSet.addJsonWebKey(newJwk);
+        logger.info("Successfully created a new AES key with key ID '" + newJwk.getKeyId() + "'");
+        logger.debug(newJwk.toJson());
+
+        // Write the keylist back to file.
+        this.writeKeyFile();
+
+        return newJwk;
+    }
+    
 
     /**
      * Create a new JWK containing a asymmetric 2048 bit RSA key for use with
