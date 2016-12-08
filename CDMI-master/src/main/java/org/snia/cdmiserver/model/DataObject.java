@@ -62,7 +62,7 @@ import org.snia.cdmiserver.exception.ForbiddenException;
 import org.snia.cdmiserver.resource.PathResource;
 import org.snia.cdmiserver.util.JSONCompacter;
 import org.snia.cdmiserver.util.MediaTypes;
-import org.snia.fakekms.KMS;
+
 
 /**
  * <p>
@@ -335,14 +335,14 @@ public class DataObject {
 
 	public void fromJson(InputStream jsonIs, boolean fromFile)
 			throws ParseException {
-		
+
 		JsonObject json = Json.createReader(jsonIs).readObject();
 		fromJson(json, fromFile);
 	}
 
 	public void fromJson(byte[] jsonBytes, boolean fromFile)
 			throws ParseException {
-		ByteArrayInputStream is=new ByteArrayInputStream(jsonBytes);
+		ByteArrayInputStream is = new ByteArrayInputStream(jsonBytes);
 		JsonObject json = Json.createReader(is).readObject();
 		fromJson(json, fromFile);
 	}
@@ -418,15 +418,15 @@ public class DataObject {
 		this.value = new String(bytes);
 	}
 
-	public void decryptData(KMS kms) throws BadRequestException {
-		switch (this.mimetype) {
-		case "application/jose+json": {
-			this.decryptDataFomJOSEJSON(kms);
-			break;
-		}
-		}
-
-	}
+//	public void decryptData(KMS kms) throws BadRequestException {
+//		switch (this.mimetype) {
+//		case "application/jose+json": {
+//			this.decryptDataFomJOSEJSON(kms);
+//			break;
+//		}
+//		}
+//
+//	}
 
 	public void decryptDataFomJOSEJSON(JsonWebKey jwk) {
 		// parse ciphertext as JSON object
@@ -484,93 +484,93 @@ public class DataObject {
 
 	}
 
-	private void decryptDataFomJOSEJSON(KMS kms) throws BadRequestException,
-			ForbiddenException {
+	// private void decryptDataFomJOSEJSON(KMS kms) throws BadRequestException,
+	// ForbiddenException {
+	//
+	// // parse ciphertext as JSON object
+	// String cipherText = this.getValue();
+	// JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
+	// JSONObject json;
+	// try {
+	// json = (JSONObject) parser.parse(cipherText);
+	// } catch (ParseException ex) {
+	// LOG.error("Could not parse ciphertext in Object Value");
+	// throw new BadRequestException(
+	// "Could not parse JSON in Object value", ex);
+	// }
+	// String compactciphertext = JSONCompacter.JSONToCompactJWE(json);
+	//
+	// // set up JWE object
+	// JsonWebEncryption jwe = new JsonWebEncryption();
+	// try {
+	// jwe.setCompactSerialization(compactciphertext);
+	// } catch (JoseException ex) {
+	// LOG.error("Could not parse JWE compact serialization");
+	// throw new BadRequestException(
+	// "Could not parse JWE compact serialization", ex);
+	// }
+	//
+	// // identify the key used for encryption
+	// JsonWebKey key = null;
+	// String keyid = this.getMetadata().get("cdmi_enc_keyID");
+	// if (keyid == null) {
+	// // See if the ciphertext has a keyid
+	// String jweKid = jwe.getKeyIdHeaderValue();
+	// if (jweKid != null && jweKid != "") {
+	// keyid = jweKid;
+	// key = kms.getKeyByID(keyid);
+	// }
+	// // else use object-id
+	// if (key == null) {
+	// key = kms.getKeyByID(this.getObjectID());
+	// }
+	// } else {
+	// key = kms.getKeyByID(keyid);
+	// }
+	//
+	// if (key == null) {
+	// throw new ForbiddenException("No key available; could not decrypt.");
+	// }
+	//
+	// // Figure out whether to use symmetric key or private key
+	// if ("oct".equals(key.getKeyType())) {
+	// jwe.setKey(key.getKey());
+	// } else if ("EC".equals(key.getKeyType())
+	// || "RSA".equals(key.getKeyType())) {
+	// PrivateKey sk = ((PublicJsonWebKey) key).getPrivateKey();
+	// if (sk != null) {
+	// jwe.setKey(sk);
+	// } else // only public key available
+	// {
+	// throw new ForbiddenException(
+	// "No key available; could not decrypt.");
+	// }
+	// }
+	//
+	// byte[] plain;
+	// try {
+	// plain = jwe.getPlaintextBytes();
+	// } catch (JoseException ex) {
+	// throw new BadRequestException("Could not decrypt ciphertext.");
+	// }
+	//
+	// // properly decrypted, update object.
+	// this.setMimetype(jwe.getContentTypeHeaderValue()); // set the mime type
+	// // here to decrypted
+	// // format
+	// this.getMetadata().remove("cdmi_enc_keyID");
+	// this.setValue(Base64.encodeBase64Chunked(plain));
+	// this.setValueTransferEncoding("base64");
+	// this.setMetadata("cdmi_size",
+	// Integer.toString(this.getValue().length()));
+	// }
 
-		// parse ciphertext as JSON object
-		String cipherText = this.getValue();
-		JSONParser parser = new JSONParser(JSONParser.MODE_PERMISSIVE);
-		JSONObject json;
-		try {
-			json = (JSONObject) parser.parse(cipherText);
-		} catch (ParseException ex) {
-			LOG.error("Could not parse ciphertext in Object Value");
-			throw new BadRequestException(
-					"Could not parse JSON in Object value", ex);
-		}
-		String compactciphertext = JSONCompacter.JSONToCompactJWE(json);
-
-		// set up JWE object
-		JsonWebEncryption jwe = new JsonWebEncryption();
-		try {
-			jwe.setCompactSerialization(compactciphertext);
-		} catch (JoseException ex) {
-			LOG.error("Could not parse JWE compact serialization");
-			throw new BadRequestException(
-					"Could not parse JWE compact serialization", ex);
-		}
-
-		// identify the key used for encryption
-		JsonWebKey key = null;
-		String keyid = this.getMetadata().get("cdmi_enc_keyID");
-		if (keyid == null) {
-			// See if the ciphertext has a keyid
-			String jweKid = jwe.getKeyIdHeaderValue();
-			if (jweKid != null && jweKid != "") {
-				keyid = jweKid;
-				key = kms.getKeyByID(keyid);
-			}
-			// else use object-id
-			if (key == null) {
-				key = kms.getKeyByID(this.getObjectID());
-			}
-		} else {
-			key = kms.getKeyByID(keyid);
-		}
-
-		if (key == null) {
-			throw new ForbiddenException("No key available; could not decrypt.");
-		}
-
-		// Figure out whether to use symmetric key or private key
-		if ("oct".equals(key.getKeyType())) {
-			jwe.setKey(key.getKey());
-		} else if ("EC".equals(key.getKeyType())
-				|| "RSA".equals(key.getKeyType())) {
-			PrivateKey sk = ((PublicJsonWebKey) key).getPrivateKey();
-			if (sk != null) {
-				jwe.setKey(sk);
-			} else // only public key available
-			{
-				throw new ForbiddenException(
-						"No key available; could not decrypt.");
-			}
-		}
-
-		byte[] plain;
-		try {
-			plain = jwe.getPlaintextBytes();
-		} catch (JoseException ex) {
-			throw new BadRequestException("Could not decrypt ciphertext.");
-		}
-
-		// properly decrypted, update object.
-		this.setMimetype(jwe.getContentTypeHeaderValue()); // set the mime type
-															// here to decrypted
-															// format
-		this.getMetadata().remove("cdmi_enc_keyID");
-		this.setValue(Base64.encodeBase64Chunked(plain));
-		this.setValueTransferEncoding("base64");
-		this.setMetadata("cdmi_size",
-				Integer.toString(this.getValue().length()));
-	}
-
-	public void encryptData(String targetmime, String enckeyid, KMS kms)
-			throws BadRequestException {
-		JsonWebKey encjwk = kms.getKeyByID(enckeyid);
-		encryptData(targetmime, encjwk);
-
-	}
+	// public void encryptData(String targetmime, String enckeyid, KMS kms)
+	// throws BadRequestException {
+	// JsonWebKey encjwk = kms.getKeyByID(enckeyid);
+	// encryptData(targetmime, encjwk);
+	//
+	// }
 
 	public void encryptData(String targetmime, JsonWebKey encjwk)
 			throws BadRequestException {
