@@ -34,8 +34,8 @@ import org.snia.cdmiserver.util.ACLIdentifier;
  */
 public class DacRequest {
 
-	String pathDac = "http://192.168.199.161:8080/DAC/object";
-	String pathKey = "http://192.168.199.161:8080/DAC/key/object";
+	String pathDac = "http://192.168.199.161:8080/DAC";
+	String pathKey = "http://192.168.199.161:8080/DAC/key/";
 
 	public enum method {
 
@@ -129,26 +129,35 @@ public class DacRequest {
 
 		return reqEntity;
 	}
-	
-	
+
 	public String getSecurityRequestEntity(DacRequestEntity entity) {
-		JSONObject jobj=new JSONObject();;
+		JSONObject jobj = new JSONObject();
+		;
 		try {
-			String jwe=EncryptDacRequestEntity.encryptDacRequestEntity(entity.getJSONDacReqEntity());
-			String jws=SignatureDacRequestEntity.sigDacRequestEntity(jwe);
-			String project=Base64.toBase64String(EncryptDacRequestEntity.getEncPublicKey().toJson().getBytes());
-			
-			jobj.put("protected", project);
-			jobj.put("payload", jwe);
-			jobj.put("signature", jws);
-			
+			String jwe = EncryptDacRequestEntity.encryptDacRequestEntity(entity
+					.getJSONDacReqEntity());
+			String jws = SignatureDacRequestEntity.sigDacRequestEntity(jwe);
+			// String
+			// project=Base64.toBase64String(EncryptDacRequestEntity.getEncPublicKey().toJson().getBytes());
+
+			jobj.put("dac_request", jws);
+			jobj.put("dac_request_dest_certificate",
+					EncryptDacRequestEntity.getEncCdmiPublicKey());
+			jobj.put("dac_request_dest_uri", this.pathDac);
+
 		} catch (JoseException e) {
 			System.out.println("encrypt request entity failed");
 			e.printStackTrace();
 		}
-		return jobj.toJSONString();	
+		return jobj.toJSONString();
+
+	}
+
+	public String parseSecurityResponseEntity(DacResponseEntity entity) {
 		
 		
+		
+		return null;
 	}
 
 }
