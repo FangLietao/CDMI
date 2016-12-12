@@ -88,7 +88,7 @@ public class PathResource {
 				if(i==acl.size()){
 					ACEntity aclEntity = new ACEntity();
 					aclEntity.setIdentifier("EVERYONE@");
-					aclEntity.setAceType("DENY");
+					aclEntity.setAceType("ALLOW");
 					aclEntity.setAceFlags("0x00000000");
 					aclEntity.setAceMask("0x00000000");
 					acl.add(aclEntity);					
