@@ -126,12 +126,16 @@ public class PathResource {
 					&& headers.getRequestHeader("cdmi_dac_uri") != null) {
 
 				// dac
-				String user = headers.getRequestHeader("user").get(0);
+				String user = null;
+				if (headers.getRequestHeader("user").size() != 0) {
+					user = headers.getRequestHeader("user").get(0);
+				}
 				DacRequest dac = new DacRequest();
 				DacRequestEntity reqEntity = dac.getRequestEntity(user, dObj,
 						CdmiOperation.Opertion.cdmiDelete);
 				DacResponseEntity resEntity = dac.operation(
-						Request.Method.POST, reqEntity.getJSONDacReqEntity());
+						Request.Method.POST,
+						dac.getSecurityRequestEntity(reqEntity));
 				String dacAppliedMask = resEntity.getDacAppliedMask();
 				if ((Integer.parseInt(
 						dacAppliedMask.substring(2, dacAppliedMask.length()),

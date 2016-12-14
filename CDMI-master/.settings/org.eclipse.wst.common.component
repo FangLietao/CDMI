@@ -4,6 +4,9 @@
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <dependent-module archiveName="jose4j-0.5.3-pvliesdonk.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/jose4j/jose4j">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="cdmi-server"/>
         <property name="java-output-path" value="/cdmi-server/target/classes"/>
     </wb-module>
