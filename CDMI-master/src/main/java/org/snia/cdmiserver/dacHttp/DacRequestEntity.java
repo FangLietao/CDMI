@@ -137,7 +137,7 @@ public class DacRequestEntity {
 			String str = DacRequestEntity.class.getResource("/").toString();
 			str = str.substring(6, str.length()-8);			
 			
-			FileInputStream fin = new FileInputStream(str+"cdmi_encrypt_public_jwk.json");
+			FileInputStream fin = new FileInputStream(str+"cdmi_encrypt_public.jwk.json");
 			InputStreamReader in = new InputStreamReader(fin);
 			BufferedReader reader = new BufferedReader(in);
 			String s = "";

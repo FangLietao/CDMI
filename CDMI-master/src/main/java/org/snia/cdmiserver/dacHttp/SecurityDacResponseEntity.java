@@ -4,14 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.Key;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
-
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
@@ -19,8 +16,6 @@ import org.jose4j.lang.JoseException;
 import org.snia.cdmiserver.dacHttp.DacRequestEntity;
 
 public class SecurityDacResponseEntity {
-
-	private String keyPath = "cdmi_encrypt_private_jwk.json";
 
 	private static JsonWebKey encCdmiPrivateKey;
 	private static JsonWebKey sigDacPublicKey;

@@ -63,18 +63,6 @@ public class Request// extends HttpEntityEnclosingRequestBase
     private String accept;
     private byte[] entity;
     private String authorization;
- //   private CdmiOperation.Opertion operation;
- //   private List headers;
-
-//    @Override
-//    public String getMethod() {
-//        return method.name();
-//    }
-//    @Override
-//    public void setURI(final URI uri) {
-//        this.uri = uri;
-//    }
-
    
 
     public enum Method {

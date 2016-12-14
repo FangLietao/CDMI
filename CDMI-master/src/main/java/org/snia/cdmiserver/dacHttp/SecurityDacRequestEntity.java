@@ -6,19 +6,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
 import org.jose4j.jwe.JsonWebEncryption;
 import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.snia.cdmiserver.dacHttp.DacRequestEntity;
 
 public class SecurityDacRequestEntity {
-	private String keyPath = "dac_encrypt_public_jwk.json";
 
 	private static JsonWebKey encDacPublicKey;
-	private static JsonWebKey sigCdmiPrivateKey = null;
+	private static RsaJsonWebKey sigCdmiPrivateKey = null;
 
 	public static JsonWebKey getSigCdmiPrivateKey() {
 		return sigCdmiPrivateKey;
@@ -36,7 +35,7 @@ public class SecurityDacRequestEntity {
 			str = str.substring(6, str.length() - 8);
 
 			FileInputStream fin = new FileInputStream(str
-					+ "cdmi_encrypt_public.jwk.json");
+					+ "dac_encrypt_public.jwk.json");
 			InputStreamReader in = new InputStreamReader(fin);
 			BufferedReader reader = new BufferedReader(in);
 			String s = "";
@@ -58,14 +57,14 @@ public class SecurityDacRequestEntity {
 			str = str.substring(6, str.length() - 8);
 
 			FileInputStream fin = new FileInputStream(str
-					+ "cdmi_encrypt_private.jwk.json");
+					+ "cdmi_sign_private.jwk.json");
 			InputStreamReader in = new InputStreamReader(fin);
 			BufferedReader reader = new BufferedReader(in);
 			String s = "";
 			while ((s = reader.readLine()) != null) {
 				jsonStr.append(s);
 			}
-			sigCdmiPrivateKey = JsonWebKey.Factory.newJwk(jsonStr.toString());
+			sigCdmiPrivateKey = (RsaJsonWebKey) JsonWebKey.Factory.newJwk(jsonStr.toString());
 		} catch (IOException | JoseException ex) {
 			Logger.getLogger(DacRequestEntity.class.getName()).log(
 					Level.SEVERE, null, ex);
@@ -77,24 +76,31 @@ public class SecurityDacRequestEntity {
 
 		JsonWebSignature jws = new JsonWebSignature();
 		jws.setPayload(entity);
-		jws.setAlgorithmHeaderValue(ContentEncryptionAlgorithmIdentifiers.AES_128_GCM);
-		jws.setKey(sigCdmiPrivateKey.getKey());
+		String alg;
+		if(sigCdmiPrivateKey.getAlgorithm()!=null){
+			alg=sigCdmiPrivateKey.getAlgorithm();
+		}else{
+			alg=AlgorithmIdentifiers.RSA_USING_SHA256;
+		}
+		jws.setAlgorithmHeaderValue(alg);		
+		jws.setKey(sigCdmiPrivateKey.getPrivateKey());
+		
 		if (sigCdmiPrivateKey.getKeyId() != null) {
 			jws.setKeyIdHeaderValue(sigCdmiPrivateKey.getKeyId());
 		}
-
-		return jws.getCompactSerialization();
+		
+		return jws.getFlattenedJsonSerialization();
 
 	}
 
 	public static String encryptDacRequestEntity(String entity)
 			throws JoseException {
 		JsonWebEncryption jwe = new JsonWebEncryption();
-		jwe.setAlgorithmHeaderValue("RSA-OAEP");
+		jwe.setAlgorithmHeaderValue("RSA-OAEP-256");
 		jwe.setPlaintext(entity);
 		jwe.setKey(encDacPublicKey.getKey());
 		jwe.setKeyIdHeaderValue(encDacPublicKey.getKeyId());
-		jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_GCM);
+		jwe.setEncryptionMethodHeaderParameter("A128CBC-HS256");
 
 		return jwe.getCompactSerialization();
 

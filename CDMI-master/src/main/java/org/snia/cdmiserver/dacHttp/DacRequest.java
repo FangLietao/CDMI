@@ -15,17 +15,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.ParseException;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.bouncycastle.util.encoders.Base64;
 import org.jose4j.lang.JoseException;
 import org.snia.cdmiserver.model.DataObject;
-import org.snia.cdmiserver.security.EncryptDacRequestEntity;
-import org.snia.cdmiserver.security.SignatureDacRequestEntity;
 import org.snia.cdmiserver.util.ACLIdentifier;
 
 /**
@@ -34,8 +30,8 @@ import org.snia.cdmiserver.util.ACLIdentifier;
  */
 public class DacRequest {
 
-	String pathDac = "http://192.168.199.161:8080/DAC";
-	String pathKey = "http://192.168.199.161:8080/DAC/key/";
+	String pathDac = "http://192.168.17.207:8080/DAC";
+	String pathKey = "http://192.168.17.207:8080/DAC/key/";
 
 	public enum method {
 
@@ -134,15 +130,15 @@ public class DacRequest {
 		JSONObject jobj = new JSONObject();
 		;
 		try {
-			String jwe = EncryptDacRequestEntity.encryptDacRequestEntity(entity
+			String jwe = SecurityDacRequestEntity.encryptDacRequestEntity(entity
 					.getJSONDacReqEntity());
-			String jws = SignatureDacRequestEntity.sigDacRequestEntity(jwe);
+			String jws = SecurityDacRequestEntity.sigDacRequestEntity(jwe);
 			// String
 			// project=Base64.toBase64String(EncryptDacRequestEntity.getEncPublicKey().toJson().getBytes());
 
 			jobj.put("dac_request", jws);
 			jobj.put("dac_request_dest_certificate",
-					EncryptDacRequestEntity.getEncCdmiPublicKey());
+					SecurityDacRequestEntity.getEncDacPublicKey().toJson());
 			jobj.put("dac_request_dest_uri", this.pathDac);
 
 		} catch (JoseException e) {
@@ -150,7 +146,6 @@ public class DacRequest {
 			e.printStackTrace();
 		}
 		return jobj.toJSONString();
-
 	}
 
 	public String parseSecurityResponseEntity(DacResponseEntity entity) {
