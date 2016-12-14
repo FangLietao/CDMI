@@ -48,7 +48,7 @@ public class DacResponseEntity {
 		return this;
 	}
 	
-	public String getJSONresponseEntity(){
+	public String getJSONResponseEntity(){
 		JSONObject jObj=new JSONObject();
 		if(this.dacAppliedMask!=null){
 			jObj.put("dacAppliedMask", dacAppliedMask);		

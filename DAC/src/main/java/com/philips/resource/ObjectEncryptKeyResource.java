@@ -35,7 +35,7 @@ public class ObjectEncryptKeyResource {
 			e.printStackTrace();
 		}
 
-		return Response.ok(responseEntity.getJSONresponseEntity()).build();
+		return Response.ok(responseEntity.getJSONResponseEntity()).build();
 
 	}
 

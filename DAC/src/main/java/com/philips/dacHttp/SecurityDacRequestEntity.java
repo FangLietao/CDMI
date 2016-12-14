@@ -25,7 +25,11 @@ public class SecurityDacRequestEntity {
 
 	private JsonWebSignature dac_request;
 	private JsonWebKey dac_request_dest_certificate;
-	private String dac_request_dest_uri;
+	private static String dac_request_dest_uri;
+
+	public static String getDac_request_dest_uri() {
+		return dac_request_dest_uri;
+	}
 
 	public JsonWebSignature getDac_request() {
 		return dac_request;

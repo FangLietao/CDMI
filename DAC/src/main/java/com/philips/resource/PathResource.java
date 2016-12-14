@@ -25,6 +25,7 @@ import com.philips.dacHttp.DacRequestEntity;
 import com.philips.dacHttp.DacResponseEntity;
 import com.philips.dacHttp.ObjectKey;
 import com.philips.dacHttp.SecurityDacRequestEntity;
+import com.philips.dacHttp.SecurityDacResponseEntity;
 import com.philips.dao.ACLContainerDao;
 import com.philips.dao.ACLObjectDao;
 import com.philips.model.ACEntity;
@@ -60,13 +61,17 @@ public class PathResource {
 	}
 
 	@POST
-//	@Path("/{path:.+}/")
+	// @Path("/{path:.+}/")
 	@Consumes(MediaTypes.DAC_OBJECT)
-	public Response getAccessAuthorition(@Context HttpHeaders header, byte[] bytes) {
-		DacResponseEntity responseEntity = new DacResponseEntity();		
-		responseEntity=authorityService.getAccessAuthorition(bytes);
+	public Response getAccessAuthorition(@Context HttpHeaders header,
+			byte[] bytes) {
+		DacResponseEntity responseEntity = new DacResponseEntity();
+		responseEntity = authorityService.getAccessAuthorition(bytes);
+		SecurityDacResponseEntity securityDacResponseEntity = new SecurityDacResponseEntity();
 
-		return Response.ok(responseEntity.getJSONresponseEntity()).build();
+		return Response.ok(
+				securityDacResponseEntity
+						.getSecurityRequestEntity(responseEntity)).build();
 
 	}
 
