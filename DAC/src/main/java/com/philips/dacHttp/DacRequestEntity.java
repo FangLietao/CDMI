@@ -85,7 +85,7 @@ public class DacRequestEntity {
 		}
 		if (jObj.containsKey("cdmiEncKeyId")) {
 			String keyId = jObj.getAsString("cdmiEncKeyId");
-			if (keyId.equals("objectkey")) {
+			if (keyId.equals("objectId")) {
 				this.cdmiEncKeyId = this.cdmiObjectId;
 			} else {
 				this.cdmiEncKeyId = jObj.getAsString("cdmiEncKeyId");

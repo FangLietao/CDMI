@@ -24,17 +24,24 @@ import org.jose4j.jwk.JsonWebKey;
 import com.philips.dacHttp.DacRequestEntity;
 import com.philips.dacHttp.DacResponseEntity;
 import com.philips.dacHttp.ObjectKey;
+import com.philips.dacHttp.SecurityDacRequestEntity;
 import com.philips.dao.ACLContainerDao;
 import com.philips.dao.ACLObjectDao;
 import com.philips.model.ACEntity;
 import com.philips.model.ACLContainer;
 import com.philips.model.ACLObject;
+import com.philips.service.AuthorityService;
 import com.philips.util.Identifier;
 import com.philips.util.MediaTypes;
 
 public class PathResource {
-	ACLObjectDao aclObjectDao;
-	ACLContainerDao aclContainerDao;
+	private ACLObjectDao aclObjectDao;
+	private ACLContainerDao aclContainerDao;
+	private AuthorityService authorityService;
+
+	public void setAuthorityService(AuthorityService authorityService) {
+		this.authorityService = authorityService;
+	}
 
 	public ACLContainerDao getAclContainerDao() {
 		return aclContainerDao;
@@ -53,59 +60,11 @@ public class PathResource {
 	}
 
 	@POST
-	@Path("/{path:.+}/")
+//	@Path("/{path:.+}/")
 	@Consumes(MediaTypes.DAC_OBJECT)
-	public Response getAccessAuthorition(@PathParam("path") String path,
-			@Context HttpHeaders header, byte[] bytes) {
-		DacResponseEntity responseEntity = new DacResponseEntity();
-		try {
-			DacRequestEntity reqEntity = new DacRequestEntity(bytes);
-			// find the acl object by cdmi object id
-			ACLObject aclObj = aclObjectDao.getACL(reqEntity.getCdmiObjectId());
-			
-			if (aclObj == null) {
-				// if the acl not exist,create a defalut acl of the obj
-				aclObj = new ACLObject();
-				aclObj.setObjID(reqEntity.getCdmiObjectId());
-				ACEntity aclEntity = new ACEntity();
-				aclEntity.setIdentifier("EVERYONE@");
-				aclEntity.setAceType("DENY");
-				aclEntity.setAceFlags("0x00000000");
-				aclEntity.setAceMask("0x00000000");
-				List<ACEntity> objACL = new ArrayList<ACEntity>();
-				objACL.add(aclEntity);
-				aclObj.setObjACL(objACL);
-
-				aclObjectDao.createACL(reqEntity.getCdmiObjectId(), aclObj);
-
-				responseEntity.withDacAppliedMask(aclEntity.getAceMask());
-			} else {
-				List<ACEntity> acl = aclObj.getObjACL();
-				int i;
-				for (i = 0; Identifier.transToIdentifier(((ACEntity) acl.get(i)).getIdentifier() )<Identifier.transToIdentifier( reqEntity
-						.getClientIdentity().get("acl_group"))&&i<acl.size(); i++) {
-				}
-				if(i==acl.size()){
-					ACEntity aclEntity = new ACEntity();
-					aclEntity.setIdentifier("EVERYONE@");
-					aclEntity.setAceType("ALLOW");
-					aclEntity.setAceFlags("0x00000000");
-					aclEntity.setAceMask("0x00000000");
-					acl.add(aclEntity);					
-				}
-				responseEntity.withDacAppliedMask(((ACEntity) acl.get(i))
-						.getAceMask());
-			}
-
-			JsonWebKey objKey = ObjectKey.getObjectKey((reqEntity.getCdmiEncKeyId()));
-			responseEntity.withDacObjectKey(objKey).withDacResponseId(UUID.randomUUID().toString());
-
-		} catch (ParseException e) {
-			
-			e.printStackTrace();
-		}
-		
-		String s=responseEntity.getJSONresponseEntity();
+	public Response getAccessAuthorition(@Context HttpHeaders header, byte[] bytes) {
+		DacResponseEntity responseEntity = new DacResponseEntity();		
+		responseEntity=authorityService.getAccessAuthorition(bytes);
 
 		return Response.ok(responseEntity.getJSONresponseEntity()).build();
 
@@ -200,7 +159,7 @@ public class PathResource {
 		if (aclObj == null) {
 			// return default access control
 			return Response.status(Response.Status.NOT_FOUND).build();
-		} else {		
+		} else {
 
 			return Response.ok(aclObj.toJSON()).build();
 		}

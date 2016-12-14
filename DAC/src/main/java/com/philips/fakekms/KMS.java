@@ -364,6 +364,7 @@ public class KMS {
             // write the result to the file            
             FileWriter fw = new FileWriter(keyFile);
             fw.write(json);
+            fw.flush();
             fw.close();
 
             logger.debug("written " + jwkSet.getJsonWebKeys().size() + " keys to file: " + keyFile.getAbsolutePath());

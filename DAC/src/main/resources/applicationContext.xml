@@ -17,6 +17,7 @@
 	<jaxrs:server id="dacService" address="/">
 		<jaxrs:serviceBeans>
 			<ref bean="pathResource" />
+			<ref bean="objectEncryptKeyResource" />
 		</jaxrs:serviceBeans>
 	</jaxrs:server>
 
@@ -28,18 +29,29 @@
 	</bean>
 
 	<bean id="aclObj" class="com.philips.model.ACLObject" />
-	
+
 	<bean id="aclContainerDao" class="com.philips.daoImp.ACLContainerDaoImp">
 		<property name="baseDirectoryName" value="${dac.base-directory}" />
 	</bean>
 	<bean id="aclObjectDao" class="com.philips.daoImp.ACLObjectDaoImp">
 		<property name="baseDirectoryName" value="${dac.base-directory}" />
 	</bean>
-	
+
 	<bean id="pathResource" class="com.philips.resource.PathResource"
 		scope="prototype">
 		<property name="aclObjectDao" ref="aclObjectDao"></property>
 		<property name="aclContainerDao" ref="aclContainerDao"></property>
+		<property name="authorityService" ref="authorityService"></property>
+	</bean>
+
+	<bean id="authorityService" class="com.philips.service.AuthorityService"
+		scope="prototype">
+		<property name="aclObjectDao" ref="aclObjectDao"></property>
+		<property name="aclContainerDao" ref="aclContainerDao"></property>
+	</bean>
+
+	<bean id="objectEncryptKeyResource" class="com.philips.resource.ObjectEncryptKeyResource"
+		scope="prototype">
 	</bean>
 
 

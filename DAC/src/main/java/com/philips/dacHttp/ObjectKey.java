@@ -15,12 +15,11 @@ public class ObjectKey {
 		JsonWebKey jwk = kms.getKeyByID(kid);
 		if (jwk == null) {
 			try {
-				
+
 				kms.createKeyA128KW(kid);
-//				kms.createKeyA256KW(kid);
+				// kms.createKeyA256KW(kid);
 				jwk = kms.getKeyByID(kid);
 			} catch (KMSKeyExistsException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
