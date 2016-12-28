@@ -36,9 +36,15 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.snia.cdmiserver.dacHttp.CdmiOperation;
+import org.snia.cdmiserver.dacHttp.DacRequest;
+import org.snia.cdmiserver.dacHttp.DacRequestEntity;
+import org.snia.cdmiserver.dacHttp.DacResponseEntity;
+import org.snia.cdmiserver.dacHttp.Request;
 import org.snia.cdmiserver.dao.CapabilityDao;
 import org.snia.cdmiserver.model.Capability;
 import org.snia.cdmiserver.util.MediaTypes;
@@ -51,41 +57,42 @@ import org.snia.cdmiserver.util.MediaTypes;
 
 @Path("/cdmi_capabilities{path:.*}")
 public class CapabilityResource {
-    private static final Logger LOG = LoggerFactory.getLogger(CapabilityResource.class);
+	private static final Logger LOG = LoggerFactory
+			.getLogger(CapabilityResource.class);
 
-    /**
-     * <p>
-     * Injected information about the current request.
-     * </p>
-     */
-    @Context
-    UriInfo uriInfo;
+	/**
+	 * <p>
+	 * Injected information about the current request.
+	 * </p>
+	 */
+	@Context
+	UriInfo uriInfo;
 
-    private CapabilityDao capabilityDao;
+	private CapabilityDao capabilityDao;
 
-    /**
-     * <p>
-     * Injected {@link Capability} instance.
-     * </p>
-     */
-    public void setCapabilityDao(CapabilityDao capabilityDao) {
-        this.capabilityDao = capabilityDao;
-    }
+	/**
+	 * <p>
+	 * Injected {@link Capability} instance.
+	 * </p>
+	 */
+	public void setCapabilityDao(CapabilityDao capabilityDao) {
+		this.capabilityDao = capabilityDao;
+	}
 
-    /**
-     * <p>
-     * [Chapter 12] Read a Capability Object (CDMI Content Type)
-     * </p>
-     *
-     * @param path
-     *            Path to the existing container
-     */
-    @GET
-    @Produces(MediaTypes.CAPABILITY)
-    public Response getCapabilityDao(@PathParam("path") String path) {
-        LOG.trace("In CapabilityResource.getCapabilityDao, path is: {}", path);
-        Capability capability = capabilityDao.findByPath(path);
-        return Response.ok(capability).type(MediaTypes.CAPABILITY).build();
-    }
+	/**
+	 * <p>
+	 * [Chapter 12] Read a Capability Object (CDMI Content Type)
+	 * </p>
+	 * 
+	 * @param path
+	 *            Path to the existing container
+	 */
+	@GET
+	@Produces(MediaTypes.CAPABILITY)
+	public Response getCapabilityDao(@PathParam("path") String path,@Context HttpHeaders headers) {
+		LOG.trace("In CapabilityResource.getCapabilityDao, path is: {}", path);
+		Capability capability = capabilityDao.findByPath(path);		
+		return Response.ok(capability).type(MediaTypes.CAPABILITY).build();
+	}
 
 }

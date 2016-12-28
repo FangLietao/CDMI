@@ -133,9 +133,12 @@ public class PathResource {
 				DacRequest dac = new DacRequest();
 				DacRequestEntity reqEntity = dac.getRequestEntity(user, dObj,
 						CdmiOperation.Opertion.cdmiDelete);
+				String pathDac = dObj.getMetadata().get("cdmi_dac_uri");
 				DacResponseEntity resEntity = dac.operation(
-						Request.Method.POST,
-						dac.getSecurityRequestEntity(reqEntity));
+						Request.Method.POST, dac.getSecurityRequestEntity(
+								reqEntity,
+								dObj.getMetadata().get("cdmi_dac_certificate"),
+								pathDac), pathDac);
 				String dacAppliedMask = resEntity.getDacAppliedMask();
 				if ((Integer.parseInt(
 						dacAppliedMask.substring(2, dacAppliedMask.length()),
@@ -253,8 +256,16 @@ public class PathResource {
 					DacRequestEntity dacReqEntity = dacRequest
 							.getRequestEntity(user, dObj,
 									CdmiOperation.Opertion.cdmiRead);
+					// DacResponseEntity dacResEntity = dacRequest.operation(
+					// Request.Method.POST, dacReqEntity);
+					String pathDac = dObj.getMetadata().get("cdmi_dac_uri");
 					DacResponseEntity dacResEntity = dacRequest.operation(
-							Request.Method.POST, dacReqEntity);
+							Request.Method.POST, dacRequest
+									.getSecurityRequestEntity(
+											dacReqEntity,
+											dObj.getMetadata().get(
+													"cdmi_dac_certificate"),
+											pathDac), pathDac);
 					String dacAppliedMask = dacResEntity.getDacAppliedMask();
 					if ((Integer.parseInt(dacAppliedMask.substring(2,
 							dacAppliedMask.length()), 16) & 0x00000001) != 0x00000001) {
@@ -388,8 +399,16 @@ public class PathResource {
 					DacRequestEntity dacReqEntity = dacRequest
 							.getRequestEntity(user, dObj, Opertion.cdmiModify,
 									keyId);
+					// DacResponseEntity dacResEntity = dacRequest.operation(
+					// Request.Method.POST, dacReqEntity);
+					String pathDac = dObj.getMetadata().get("cdmi_dac_uri");
 					DacResponseEntity dacResEntity = dacRequest.operation(
-							Request.Method.POST, dacReqEntity);
+							Request.Method.POST, dacRequest
+									.getSecurityRequestEntity(
+											dacReqEntity,
+											dObj.getMetadata().get(
+													"cdmi_dac_certificate"),
+											pathDac), pathDac);
 					String dacAppliedMask = dacResEntity.getDacAppliedMask();
 					if ((Integer.parseInt(dacAppliedMask.substring(2,
 							dacAppliedMask.length()), 16) & 0x00000001) != 0x00000001) {
@@ -646,8 +665,18 @@ public class PathResource {
 						DacRequestEntity dacReqEntity = dacRequest
 								.getRequestEntity(user, oldObj,
 										Opertion.cdmiModify, keyId);
+						// DacResponseEntity dacResEntity =
+						// dacRequest.operation(
+						// Request.Method.POST, dacReqEntity);
+						String pathDac = oldObj.getMetadata().get(
+								"cdmi_dac_uri");
 						DacResponseEntity dacResEntity = dacRequest.operation(
-								Request.Method.POST, dacReqEntity);
+								Request.Method.POST,
+								dacRequest.getSecurityRequestEntity(
+										dacReqEntity,
+										oldObj.getMetadata().get(
+												"cdmi_dac_certificate"),
+										pathDac), pathDac);
 						String dacAppliedMask = dacResEntity
 								.getDacAppliedMask();
 						if ((Integer.parseInt(
@@ -701,8 +730,18 @@ public class PathResource {
 								.getRequestEntity(user, newObj,
 										CdmiOperation.Opertion.cdmiModify,
 										keyId);
+						// DacResponseEntity dacResEntity =
+						// dacRequest.operation(
+						// Request.Method.POST, dacReqEntity, true);
+						String pathDac = oldObj.getMetadata().get(
+								"cdmi_dac_uri");
 						DacResponseEntity dacResEntity = dacRequest.operation(
-								Request.Method.POST, dacReqEntity, true);
+								Request.Method.POST,
+								dacRequest.getSecurityRequestEntity(
+										dacReqEntity,
+										oldObj.getMetadata().get(
+												"cdmi_dac_certificate"),
+										pathDac), pathDac,true);
 						newObjKey = dacResEntity.getDacObjectKey();
 					} else {
 						// acl *************
@@ -764,8 +803,18 @@ public class PathResource {
 						DacRequestEntity dacReqEntity = dacRequest
 								.getRequestEntity(user, oldObj,
 										Opertion.cdmiModify, keyId);
+						// DacResponseEntity dacResEntity =
+						// dacRequest.operation(
+						// Request.Method.POST, dacReqEntity);
+						String pathDac = oldObj.getMetadata().get(
+								"cdmi_dac_uri");
 						DacResponseEntity dacResEntity = dacRequest.operation(
-								Request.Method.POST, dacReqEntity);
+								Request.Method.POST,
+								dacRequest.getSecurityRequestEntity(
+										dacReqEntity,
+										oldObj.getMetadata().get(
+												"cdmi_dac_certificate"),
+										pathDac), pathDac);
 						String dacAppliedMask = dacResEntity
 								.getDacAppliedMask();
 
@@ -825,8 +874,18 @@ public class PathResource {
 						DacRequestEntity dacReqEntity = dacRequest
 								.getRequestEntity(user, oldObj,
 										Opertion.cdmiModify, keyId);
+						// DacResponseEntity dacResEntity =
+						// dacRequest.operation(
+						// Request.Method.POST, dacReqEntity);
+						String pathDac = oldObj.getMetadata().get(
+								"cdmi_dac_uri");
 						DacResponseEntity dacResEntity = dacRequest.operation(
-								Request.Method.POST, dacReqEntity);
+								Request.Method.POST,
+								dacRequest.getSecurityRequestEntity(
+										dacReqEntity,
+										oldObj.getMetadata().get(
+												"cdmi_dac_certificate"),
+										pathDac), pathDac);
 						String dacAppliedMask = dacResEntity
 								.getDacAppliedMask();
 						if ((Integer.parseInt(
@@ -877,8 +936,18 @@ public class PathResource {
 						DacRequestEntity dacReqEntity = dacRequest
 								.getRequestEntity(user, oldObj,
 										Opertion.cdmiModify);
+						// DacResponseEntity dacResEntity =
+						// dacRequest.operation(
+						// Request.Method.POST, dacReqEntity);
+						String pathDac = oldObj.getMetadata().get(
+								"cdmi_dac_uri");
 						DacResponseEntity dacResEntity = dacRequest.operation(
-								Request.Method.POST, dacReqEntity);
+								Request.Method.POST,
+								dacRequest.getSecurityRequestEntity(
+										dacReqEntity,
+										oldObj.getMetadata().get(
+												"cdmi_dac_certificate"),
+										pathDac), pathDac);
 						String dacAppliedMask = dacResEntity
 								.getDacAppliedMask();
 						if ((Integer.parseInt(
