@@ -18,38 +18,38 @@ import org.jose4j.lang.JoseException;
 
 public class SecurityDacResponseEntity {
 
-	private static JsonWebKey encCdmiPublicKey;
+	// private static JsonWebKey encCdmiPublicKey;
 	private static RsaJsonWebKey sigDacPrivateKey = null;
 
 	public static JsonWebKey getSigDacPrivateKey() {
 		return sigDacPrivateKey;
 	}
 
-	public static JsonWebKey getEncCdmiPublicKey() {
-		return encCdmiPublicKey;
-	}
+	// public static JsonWebKey getEncCdmiPublicKey() {
+	// return encCdmiPublicKey;
+	// }
 
-	static {
-		StringBuilder jsonStr = new StringBuilder();
-		try {
-
-			String str = DacRequestEntity.class.getResource("/").toString();
-			str = str.substring(6, str.length() - 8);
-
-			FileInputStream fin = new FileInputStream(str
-					+ "cdmi_encrypt_public.jwk.json");
-			InputStreamReader in = new InputStreamReader(fin);
-			BufferedReader reader = new BufferedReader(in);
-			String s = "";
-			while ((s = reader.readLine()) != null) {
-				jsonStr.append(s);
-			}
-			encCdmiPublicKey = JsonWebKey.Factory.newJwk(jsonStr.toString());
-		} catch (IOException | JoseException ex) {
-			Logger.getLogger(DacRequestEntity.class.getName()).log(
-					Level.SEVERE, null, ex);
-		}
-	}
+	// static {
+	// StringBuilder jsonStr = new StringBuilder();
+	// try {
+	//
+	// String str = DacRequestEntity.class.getResource("/").toString();
+	// str = str.substring(6, str.length() - 8);
+	//
+	// FileInputStream fin = new FileInputStream(str
+	// + "cdmi_encrypt_public.jwk.json");
+	// InputStreamReader in = new InputStreamReader(fin);
+	// BufferedReader reader = new BufferedReader(in);
+	// String s = "";
+	// while ((s = reader.readLine()) != null) {
+	// jsonStr.append(s);
+	// }
+	// encCdmiPublicKey = JsonWebKey.Factory.newJwk(jsonStr.toString());
+	// } catch (IOException | JoseException ex) {
+	// Logger.getLogger(DacRequestEntity.class.getName()).log(
+	// Level.SEVERE, null, ex);
+	// }
+	// }
 
 	static {
 		StringBuilder jsonStr = new StringBuilder();
@@ -74,7 +74,7 @@ public class SecurityDacResponseEntity {
 		}
 	}
 
-	public static String sigDacRequestEntity(String entity)
+	private String sigDacRequestEntity(String entity)
 			throws JoseException {
 
 		JsonWebSignature jws = new JsonWebSignature();
@@ -96,7 +96,7 @@ public class SecurityDacResponseEntity {
 
 	}
 
-	public static String encryptDacRequestEntity(String entity)
+	private String encryptDacRequestEntity(String entity,JsonWebKey encCdmiPublicKey)
 			throws JoseException {
 		JsonWebEncryption jwe = new JsonWebEncryption();
 		jwe.setAlgorithmHeaderValue("RSA-OAEP-256");
@@ -109,16 +109,16 @@ public class SecurityDacResponseEntity {
 
 	}
 
-	public String getSecurityRequestEntity(DacResponseEntity entity) {
+	public String getSecurityRequestEntity(DacResponseEntity entity,
+			JsonWebKey encCdmiPublicKey) {
 		JSONObject jobj = new JSONObject();
 
 		try {
-			String jwe = encryptDacRequestEntity(entity.getJSONResponseEntity());
+			String jwe = encryptDacRequestEntity(entity.getJSONResponseEntity(),encCdmiPublicKey);
 			String jws = sigDacRequestEntity(jwe);
 
 			jobj.put("dac_response", jws);
-			jobj.put("dac_response_dest_certificate", getEncCdmiPublicKey()
-					.toJson());
+			jobj.put("dac_response_dest_certificate", encCdmiPublicKey.toJson());
 			jobj.put("dac_response_dest_uri",
 					SecurityDacRequestEntity.getDac_request_dest_uri());
 

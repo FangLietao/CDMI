@@ -20,8 +20,8 @@ import com.philips.model.ACLObject;
 import com.philips.util.Identifier;
 
 public class AuthorityService {
-	private  ACLObjectDao aclObjectDao;
-	private  ACLContainerDao aclContainerDao;
+	private ACLObjectDao aclObjectDao;
+	private ACLContainerDao aclContainerDao;
 
 	public ACLContainerDao getAclContainerDao() {
 		return aclContainerDao;
@@ -39,67 +39,61 @@ public class AuthorityService {
 		this.aclObjectDao = aclObjectDao;
 	}
 
-	public DacResponseEntity getAccessAuthorition(byte[] bytes) {
+	public DacResponseEntity getAccessAuthorition(DacRequestEntity reqEntity) {
 		DacResponseEntity responseEntity = new DacResponseEntity();
-		try {
-			SecurityDacRequestEntity securityReqEntity = new SecurityDacRequestEntity(
-					new String(bytes));
-			String jws = securityReqEntity
-					.sigVertifyDacRequestEntity(securityReqEntity
-							.getDac_request());
-			String jwe = securityReqEntity.decryptDacResponseEntity(jws);
-			DacRequestEntity reqEntity = new DacRequestEntity(jwe);
 
-			// find the acl object by cdmi object id
-			ACLObject aclObj = aclObjectDao.getACL(reqEntity.getCdmiObjectId());
+		// SecurityDacRequestEntity securityReqEntity = new
+		// SecurityDacRequestEntity(
+		// new String(bytes));
+		// String jws = securityReqEntity
+		// .sigVertifyDacRequestEntity(securityReqEntity
+		// .getDac_request());
+		// String jwe = securityReqEntity.decryptDacResponseEntity(jws);
+		// DacRequestEntity reqEntity = new DacRequestEntity(jwe);
 
-			if (aclObj == null) {
-				// if the acl not exist,create a defalut acl of the obj
-				aclObj = new ACLObject();
-				aclObj.setObjID(reqEntity.getCdmiObjectId());
+		// find the acl object by cdmi object id
+		ACLObject aclObj = aclObjectDao.getACL(reqEntity.getCdmiObjectId());
+
+		if (aclObj == null) {
+			// if the acl not exist,create a defalut acl of the obj
+			aclObj = new ACLObject();
+			aclObj.setObjID(reqEntity.getCdmiObjectId());
+			ACEntity aclEntity = new ACEntity();
+			aclEntity.setIdentifier("EVERYONE@");
+			aclEntity.setAceType("DENY");
+			aclEntity.setAceFlags("0x00000000");
+			aclEntity.setAceMask("0x00000000");
+			List<ACEntity> objACL = new ArrayList<ACEntity>();
+			objACL.add(aclEntity);
+			aclObj.setObjACL(objACL);
+
+			aclObjectDao.createACL(reqEntity.getCdmiObjectId(), aclObj);
+
+			responseEntity.withDacAppliedMask(aclEntity.getAceMask());
+		} else {
+			List<ACEntity> acl = aclObj.getObjACL();
+			int i;
+			for (i = 0; Identifier.transToIdentifier(((ACEntity) acl.get(i))
+					.getIdentifier()) < Identifier.transToIdentifier(reqEntity
+					.getClientIdentity().get("acl_group"))
+					&& i < acl.size(); i++) {
+			}
+			if (i == acl.size()) {
 				ACEntity aclEntity = new ACEntity();
 				aclEntity.setIdentifier("EVERYONE@");
-				aclEntity.setAceType("DENY");
+				aclEntity.setAceType("ALLOW");
 				aclEntity.setAceFlags("0x00000000");
 				aclEntity.setAceMask("0x00000000");
-				List<ACEntity> objACL = new ArrayList<ACEntity>();
-				objACL.add(aclEntity);
-				aclObj.setObjACL(objACL);
-
-				aclObjectDao.createACL(reqEntity.getCdmiObjectId(), aclObj);
-
-				responseEntity.withDacAppliedMask(aclEntity.getAceMask());
-			} else {
-				List<ACEntity> acl = aclObj.getObjACL();
-				int i;
-				for (i = 0; Identifier
-						.transToIdentifier(((ACEntity) acl.get(i))
-								.getIdentifier()) < Identifier
-						.transToIdentifier(reqEntity.getClientIdentity().get(
-								"acl_group"))
-						&& i < acl.size(); i++) {
-				}
-				if (i == acl.size()) {
-					ACEntity aclEntity = new ACEntity();
-					aclEntity.setIdentifier("EVERYONE@");
-					aclEntity.setAceType("ALLOW");
-					aclEntity.setAceFlags("0x00000000");
-					aclEntity.setAceMask("0x00000000");
-					acl.add(aclEntity);
-				}
-				responseEntity.withDacAppliedMask(((ACEntity) acl.get(i))
-						.getAceMask());
+				acl.add(aclEntity);
 			}
-
-			JsonWebKey objKey = ObjectKey.getObjectKey((reqEntity
-					.getCdmiEncKeyId()));
-			responseEntity.withDacObjectKey(objKey).withDacResponseId(
-					UUID.randomUUID().toString());
-
-		} catch (ParseException | JoseException e) {
-
-			e.printStackTrace();
+			responseEntity.withDacAppliedMask(((ACEntity) acl.get(i))
+					.getAceMask());
 		}
+
+		JsonWebKey objKey = ObjectKey
+				.getObjectKey((reqEntity.getCdmiEncKeyId()));
+		responseEntity.withDacObjectKey(objKey).withDacResponseId(
+				UUID.randomUUID().toString());
 
 		return responseEntity;
 

@@ -20,6 +20,7 @@ import net.minidev.json.parser.ParseException;
 
 import org.codehaus.jackson.JsonParseException;
 import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.lang.JoseException;
 
 import com.philips.dacHttp.DacRequestEntity;
 import com.philips.dacHttp.DacResponseEntity;
@@ -61,17 +62,33 @@ public class PathResource {
 	}
 
 	@POST
-	// @Path("/{path:.+}/")
+	@Path("/")
 	@Consumes(MediaTypes.DAC_OBJECT)
 	public Response getAccessAuthorition(@Context HttpHeaders header,
 			byte[] bytes) {
+
+		SecurityDacRequestEntity securityReqEntity = new SecurityDacRequestEntity(
+				new String(bytes));
+		String jws = securityReqEntity
+				.sigVertifyDacRequestEntity(securityReqEntity.getDac_request());
+		String jwe;
+		DacRequestEntity reqEntity = null;
+		try {
+			jwe = securityReqEntity.decryptDacResponseEntity(jws);
+			reqEntity = new DacRequestEntity(jwe);
+		} catch (JoseException e) {
+			e.printStackTrace();			
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
 		DacResponseEntity responseEntity = new DacResponseEntity();
-		responseEntity = authorityService.getAccessAuthorition(bytes);
+		responseEntity = authorityService.getAccessAuthorition(reqEntity);
 		SecurityDacResponseEntity securityDacResponseEntity = new SecurityDacResponseEntity();
 
 		return Response.ok(
-				securityDacResponseEntity
-						.getSecurityRequestEntity(responseEntity)).build();
+				securityDacResponseEntity.getSecurityRequestEntity(
+						responseEntity, reqEntity.getServerIdentity())).build();
 
 	}
 

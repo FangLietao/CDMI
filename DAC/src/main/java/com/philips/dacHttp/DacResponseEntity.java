@@ -15,6 +15,32 @@ public class DacResponseEntity {
 	private Map<String,String> dacResponseHeaders;
 	private String dacRedirectObjectId;
 	private String dacAuditUri;
+	
+	
+	public String getDacResponseVersion() {
+		return dacResponseVersion;
+	}
+	public String getDacResponseId() {
+		return dacResponseId;
+	}
+	public String getDacIdentity() {
+		return dacIdentity;
+	}
+	public String getDacAppliedMask() {
+		return dacAppliedMask;
+	}
+	public JsonWebKey getDacObjectKey() {
+		return dacObjectKey;
+	}
+	public Map<String, String> getDacResponseHeaders() {
+		return dacResponseHeaders;
+	}
+	public String getDacRedirectObjectId() {
+		return dacRedirectObjectId;
+	}
+	public String getDacAuditUri() {
+		return dacAuditUri;
+	}
 	public DacResponseEntity withDacResponseVersion(String dacResponseVersion) {
 		this.dacResponseVersion = dacResponseVersion;
 		return this;

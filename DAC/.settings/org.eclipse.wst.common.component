@@ -5,6 +5,9 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/scr/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <dependent-module archiveName="jose4j-0.5.3-pvliesdonk.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/jose4j/jose4j">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="DAC"/>
         <property name="java-output-path" value="/DAC/target/classes"/>
     </wb-module>
