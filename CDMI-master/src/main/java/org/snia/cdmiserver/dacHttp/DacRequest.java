@@ -13,14 +13,9 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.ParseException;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.bouncycastle.util.encoders.Base64;
-import org.jose4j.lang.JoseException;
 import org.snia.cdmiserver.model.DataObject;
 import org.snia.cdmiserver.util.ACLIdentifier;
 
@@ -30,40 +25,42 @@ import org.snia.cdmiserver.util.ACLIdentifier;
  */
 public class DacRequest {
 
-	String pathDac = "http://192.168.17.207:8080/DAC";
-	String pathKey = "http://192.168.17.207:8080/DAC/key/";
+	// String pathDac = "http://192.168.1.201:8080/DAC";
+	// String pathKey = "http://192.168.1.201:8080/DAC/key/";
 
-	public enum method {
+	// public enum method {
+	//
+	// }
 
-	}
-
-	public void setPathDac(String pathDac) {
-		this.pathDac = pathDac;
-	}
-
-	public DacResponseEntity operation(Request.Method method,
-			DacRequestEntity entity) throws Exception {
-		return operation(method, entity.getJSONDacReqEntity());
-	}
-
-	public DacResponseEntity operation(Request.Method method, String entity)
-			throws Exception, IOException {
-		return operation(method, entity, false);
-	}
+	// public void setPathDac(String pathDac) {
+	// this.pathDac = pathDac;
+	// }
 
 	public DacResponseEntity operation(Request.Method method,
-			DacRequestEntity entity, boolean isGetKey)
-			throws URISyntaxException, IOException {
-		return operation(method, entity.getJSONDacReqEntity(), isGetKey);
+			DacRequestEntity entity, String pathDac) throws Exception {
+		return operation(method, entity.getJSONDacReqEntity(), pathDac);
 	}
 
 	public DacResponseEntity operation(Request.Method method, String entity,
-			boolean isGetKey) throws URISyntaxException, IOException {
+			String pathDac) throws Exception, IOException {
+		return operation(method, entity, pathDac, false);
+	}
+
+	public DacResponseEntity operation(Request.Method method,
+			DacRequestEntity entity, String pathDac, boolean isGetKey)
+			throws URISyntaxException, IOException {
+		return operation(method, entity.getJSONDacReqEntity(), pathDac,
+				isGetKey);
+	}
+
+	public DacResponseEntity operation(Request.Method method, String entity,
+			String pathKey, boolean isGetKey) throws URISyntaxException,
+			IOException {
 		Request req;
-		if (isGetKey) {
+		if (!isGetKey) {
 			req = new Request(method, pathKey);
 		} else {
-			req = new Request(method, pathDac);
+			req = new Request(method, pathKey + "/key/");
 		}
 
 		HttpResponse response = req.withContentType("application/dac-object")
@@ -80,13 +77,11 @@ public class DacRequest {
 			s.append(line);
 		}
 
-		DacResponseEntity resEntity = new DacResponseEntity();
-		try {
-			resEntity.fromJSONString(s.toString());
-		} catch (ParseException ex) {
-			Logger.getLogger(DacRequest.class.getName()).log(Level.SEVERE,
-					null, ex);
-		}
+		SecurityDacResponseEntity securityDacResponseEntity = new SecurityDacResponseEntity(
+				s.toString());
+
+		DacResponseEntity resEntity = securityDacResponseEntity
+				.getDacResponseEntity();
 
 		return resEntity;
 
@@ -126,33 +121,12 @@ public class DacRequest {
 		return reqEntity;
 	}
 
-	public String getSecurityRequestEntity(DacRequestEntity entity) {
-		JSONObject jobj = new JSONObject();
-		;
-		try {
-			String jwe = SecurityDacRequestEntity.encryptDacRequestEntity(entity
-					.getJSONDacReqEntity());
-			String jws = SecurityDacRequestEntity.sigDacRequestEntity(jwe);
-			// String
-			// project=Base64.toBase64String(EncryptDacRequestEntity.getEncPublicKey().toJson().getBytes());
+	public String getSecurityRequestEntity(DacRequestEntity entity,
+			String jwkString, String pathDac) {
+		SecurityDacRequestEntity securityDacRequestEntity = new SecurityDacRequestEntity();
+		return securityDacRequestEntity.getSecurityRequestEntity(entity,
+				jwkString, pathDac);
 
-			jobj.put("dac_request", jws);
-			jobj.put("dac_request_dest_certificate",
-					SecurityDacRequestEntity.getEncDacPublicKey().toJson());
-			jobj.put("dac_request_dest_uri", this.pathDac);
-
-		} catch (JoseException e) {
-			System.out.println("encrypt request entity failed");
-			e.printStackTrace();
-		}
-		return jobj.toJSONString();
-	}
-
-	public String parseSecurityResponseEntity(DacResponseEntity entity) {
-		
-		
-		
-		return null;
 	}
 
 }
